@@ -11,8 +11,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "DaveKok\\Http\\": "src/",
-            "DaveKok\\Http\\Tests\\": "tests/"
+            "davekok\\http\\": "src/",
+            "davekok\\http\\tests\\": "tests/"
         }
     },
     "repositories": [
