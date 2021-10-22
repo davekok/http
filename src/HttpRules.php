@@ -34,8 +34,9 @@ class HttpRules
     }
 
     #[Solution]
-    public function reduceRequest(array $tokens): Token
+    public function solution(HttpRequest $request): Token
     {
+        var_dump($request);
     }
 
     #[Rule("request-line headers nl")]
@@ -47,7 +48,7 @@ class HttpRules
     }
 
     #[Rule("method path version nl")]
-    public function reduceRequestLine(array tokens): Token
+    public function reduceRequestLine(array $tokens): Token
     {
         return $this->parser->createToken("request-line", [
             "method" => $tokens[0]->value,
@@ -63,7 +64,7 @@ class HttpRules
     }
 
     #[Rule("headers header-name header-value nl")]
-    public function addHeader(Token[] $tokens): Token {
+    public function addHeader(array $tokens): Token {
         $tokens[0]->value[$tokens[1]->value] = $tokens[2]->value;
         return $tokens[0];
     }
