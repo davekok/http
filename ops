@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+CONTAINER_REGISTRY="ghcr.io"
+SELF="$(readlink -f "$0")"
+DIR="$(dirname "$SELF")"
+ACCOUNT="$(basename "$(dirname "$DIR")")"
+PROJECT="$(basename "$DIR")"
+
+cd "$DIR"
+
+case "${1:-}" in
+    login)
+        podman login "$CONTAINER_REGISTRY"
+        ;;
+
+    build)
+        if [ ! -f "composer.lock" ]
+        then
+            exec "$SELF" update
+        fi
+
+        buildah bud -t "$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT:dev" dev.containerfile
+        ;;
+
+    update | require)
+        CMD="$1"
+        shift
+        podman run -it --rm -v ./:/app/ composer composer "$CMD" --no-install $*
+        exec "$SELF" build
+        ;;
+
+    push)
+        podman push "$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT:dev"
+        ;;
+
+    test)
+        shift
+        mkdir -p ./docs/coverage
+        podman run -it --rm -w /app \
+            -v ./src:/app/src:ro \
+            -v ./tests:/app/tests:ro \
+            -v ./phpunit.xml:/app/phpunit.xml:ro \
+            -v ./docs/coverage:/app/docs/coverage:rw \
+            "$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT:dev" \
+            php /app/vendor/bin/phpunit --coverage-html /app/docs/coverage /app/tests $*
+        ;;
+
+    check)
+        podman run -it --rm -w /app -v ./src:/app/src:ro -v ./tests:/app/tests:ro "$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT:dev" \
+            find src tests -name "*.php" -type f -exec php -l "{}" \;
+        ;;
+
+    bash)
+        shift
+        podman run -it --rm -w /app -v ./src:/app/src -v ./tests:/app/tests "$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT:dev" bash
+        ;;
+
+    "")
+        echo "Usage: $0 ( login | build | update | require | push | test | check | bash)"
+        ;;
+esac
