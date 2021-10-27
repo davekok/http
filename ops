@@ -8,8 +8,40 @@ SELF="$(readlink -f "$0")"
 DIR="$(dirname "$SELF")"
 ACCOUNT="$(basename "$(dirname "$DIR")")"
 PROJECT="$(basename "$DIR")"
+ID="$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT"
 
 cd "$DIR"
+
+function volumes() {
+    VOLUMES=()
+    for volume in "$@"
+    do
+        case "$volume" in
+            src)
+                VOLUMES+=("-v" "./src:/app/src:ro")
+                ;;
+            test)
+                mkdir -p "./tests"
+                VOLUMES+=("-v" "./tests:/app/tests:ro")
+                ;;
+            phpunit)
+                VOLUMES+=("-v" "./phpunit.xml:/app/phpunit.xml:ro")
+                ;;
+            coverage)
+                mkdir -p "./docs/coverage"
+                VOLUMES+=("-v" "./docs/coverage:/app/docs/coverage:rw")
+                ;;
+            dependencies)
+                if [ -d "../stream/src" ]; then
+                    VOLUMES+=("-v" "../stream/src:/app/vendor/davekok/stream/src:ro")
+                fi
+                if [ -d "../lalr1/src" ]; then
+                    VOLUMES+=("-v" "../lalr1/src:/app/vendor/davekok/lalr1/src:ro")
+                fi
+                ;;
+        esac
+    done
+}
 
 case "${1:-}" in
     login)
@@ -22,7 +54,14 @@ case "${1:-}" in
             exec "$SELF" update
         fi
 
-        buildah bud -t "$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT:dev" dev.containerfile
+        case "${2:-dev}" in
+            dev)
+                buildah bud -t "$ID:dev" "dev.containerfile"
+                ;;
+            *)
+                buildah bud -t "$ID:${2}" "release.containerfile"
+                ;;
+        esac
         ;;
 
     update | require)
@@ -33,32 +72,32 @@ case "${1:-}" in
         ;;
 
     push)
-        podman push "$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT:dev"
+        podman push "$ID:${2:-latest}"
         ;;
 
     test)
+        volumes src test phpunit coverage dependencies
         shift
-        mkdir -p ./docs/coverage
-        podman run -it --rm -w /app \
-            -v ./src:/app/src:ro \
-            -v ./tests:/app/tests:ro \
-            -v ./phpunit.xml:/app/phpunit.xml:ro \
-            -v ./docs/coverage:/app/docs/coverage:rw \
-            "$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT:dev" \
+        podman run -it --rm -w /app "${VOLUMES[@]}" "$ID:dev" \
             php /app/vendor/bin/phpunit --coverage-html /app/docs/coverage /app/tests $*
         ;;
 
     check)
-        podman run -it --rm -w /app -v ./src:/app/src:ro -v ./tests:/app/tests:ro "$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT:dev" \
+        volumes src test
+        podman run -it --rm -w /app "${VOLUMES[@]}" "$ID:dev" \
             find src tests -name "*.php" -type f -exec php -l "{}" \;
         ;;
 
     bash)
-        shift
-        podman run -it --rm -w /app -v ./src:/app/src -v ./tests:/app/tests "$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT:dev" bash
+        volumes src test
+        podman run -it --rm -w /app "${VOLUMES[@]}" "$ID:${2:-dev}" bash
         ;;
 
     "")
         echo "Usage: $0 ( login | build | update | require | push | test | check | bash)"
+        ;;
+
+    *)
+        echo "No such subcommand: $@"
         ;;
 esac

@@ -1,19 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace davekok\http;
 
 use davekok\lalr1\Parser;
-use davekok\stream\ScanBuffer;
-use davekok\stream\ScanException;
-use davekok\stream\Scanner;
+use davekok\stream\ReaderBuffer;
+use davekok\stream\ReaderException;
+use davekok\stream\Reader;
+use Psr\Log\LoggerInterface;
 
-enum HttpScanner_Condition
+enum HttpReader_Condition
 {
     case MAIN;
     case HEADER_VALUE;
 }
 
-enum HttpScanner_State
+enum HttpReader_State
 {
     case YY_START;
     case YY_METHOD_OR_HEADER_NAME;
@@ -26,6 +29,7 @@ enum HttpScanner_State
     case YY_VERSION_7;
     case YY_PATH;
     case YY_HEADER_NAME;
+    case YY_HEADER_SPACE;
     case YY_HEADER_VALUE;
     case YY_INDENT;
     case YY_NL;
@@ -33,7 +37,7 @@ enum HttpScanner_State
     case YY_DOUBLE_NL_2;
 }
 
-enum HttpScanner_TokenType
+enum HttpReader_TokenType
 {
     case T_NL;
     case T_METHOD;
@@ -44,22 +48,21 @@ enum HttpScanner_TokenType
     case T_HEADER_VALUE;
 }
 
-class HttpScanner implements Scanner {
+class HttpReader implements Reader {
     public function __construct(
+        private readonly LoggerInterface $logger,
         private readonly Parser $parser,
-        private HttpScanner_Condition $condition = HttpScanner_Condition::MAIN,
-        private HttpScanner_State $state = HttpScanner_Condition::YYSTART,
-    ) {
-        $this->parser->setRulesObject($this);
-    }
+        private HttpReader_Condition $condition = HttpReader_Condition::MAIN,
+        private HttpReader_State $state = HttpReader_State::YY_START,
+    ) {}
 
     public function reset(): void
     {
-        $this->condition = HttpScanner_Condition::MAIN;
-        $this->state = HttpScanner_Condition::YYSTART;
+        $this->condition = HttpReader_Condition::MAIN;
+        $this->state = HttpReader_State::YY_START;
     }
 
-    public function endOfInput(ScanBuffer $buffer): void
+    public function endOfInput(ReaderBuffer $buffer): void
     {
         $this->parser->endOfTokens();
     }
@@ -74,12 +77,13 @@ class HttpScanner implements Scanner {
      * [main] nl = "\x0D\x0A" => pushToken(T_VERSION)
      * [header-value] header-value = [\x20-\x7E]* ( "\x0D\x0A" [\x09\x20]+ [\x20-\x7E]+ )* :=> main => pushToken(T_HEADER_VALUE)
      */
-    public function scan(ScanBuffer $buffer): void {
+    public function read(ReaderBuffer $buffer): void
+    {
         while ($buffer->valid()) {
             switch ($this->condition) {
-                case HttpScanner_Condition::MAIN:
+                case HttpReader_Condition::MAIN:
                     switch ($this->state) {
-                        case HttpScanner_State::YY_START:
+                        case HttpReader_State::YY_START:
                             switch ($buffer->peek()) {
                                 // [A-GI-Za-z]
                                 case 0x41:case 0x42:case 0x43:case 0x44:case 0x45:case 0x46:case 0x47:          case 0x49:
@@ -88,48 +92,48 @@ class HttpScanner implements Scanner {
                                 case 0x61:case 0x62:case 0x63:case 0x64:case 0x65:case 0x66:case 0x67:case 0x68:case 0x69:
                                 case 0x6A:case 0x6B:case 0x6C:case 0x6D:case 0x6E:case 0x6F:case 0x70:case 0x71:case 0x72:
                                 case 0x73:case 0x74:case 0x75:case 0x76:case 0x77:case 0x78:case 0x79:case 0x7A:
-                                    $this->state = HttpScanner_State::YY_METHOD_OR_HEADER_NAME;
+                                    $this->state = HttpReader_State::YY_METHOD_OR_HEADER_NAME;
                                     $buffer->mark()->next();
                                     continue 4;
                                 // "H"
                                 case 0x48:
-                                    $this->state = HttpScanner_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_1;
+                                    $this->state = HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_1;
                                     $buffer->mark()->next();
                                     continue 4;
                                 // "/"
                                 case 0x2F:
-                                    $this->state = HttpScanner_State::YY_PATH;
+                                    $this->state = HttpReader_State::YY_PATH;
                                     $buffer->mark()->next();
                                     continue 4;
                                 // "-"
                                 case 0x2D:
-                                    $this->state = HttpScanner_State::YY_HEADER_NAME;
+                                    $this->state = HttpReader_State::YY_HEADER_NAME;
                                     $buffer->mark()->next();
                                     continue 4;
                                 // "\r"
                                 case 0x0D:
-                                    $this->state = HttpScanner_State::YY_NL;
+                                    $this->state = HttpReader_State::YY_NL;
                                     $buffer->mark()->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
-                        case HttpScanner_State::YY_PATH:
+                        case HttpReader_State::YY_PATH:
                             $c = $buffer->peek();
                             if ($c >= 0x21 && $c <= 0x7E) {
                                 $buffer->next();
                                 continue 3;
                             }
                             if ($c == 0x20) {
-                                $this->state = HttpScanner_State::YY_START;
-                                $buffer->next();
+                                $this->state = HttpReader_State::YY_START;
                                 $this->parser->pushToken("path", $buffer->getString());
+                                $buffer->next();
                                 continue 3;
                             }
-                            throw new ScanException();
+                            throw new ReaderException();
 
-                        case HttpScanner_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_1:
+                        case HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_1:
                             switch ($buffer->peek()) {
                                 // [A-SU-Za-z]
                                 case 0x41:case 0x42:case 0x43:case 0x44:case 0x45:case 0x46:case 0x47:case 0x48:case 0x49:
@@ -138,37 +142,37 @@ class HttpScanner implements Scanner {
                                 case 0x61:case 0x62:case 0x63:case 0x64:case 0x65:case 0x66:case 0x67:case 0x68:case 0x69:
                                 case 0x6A:case 0x6B:case 0x6C:case 0x6D:case 0x6E:case 0x6F:case 0x70:case 0x71:case 0x72:
                                 case 0x73:case 0x74:case 0x75:case 0x76:case 0x77:case 0x78:case 0x79:case 0x7A:
-                                    $this->state = HttpScanner_State::YY_METHOD_OR_HEADER_NAME;
+                                    $this->state = HttpReader_State::YY_METHOD_OR_HEADER_NAME;
                                     $buffer->next();
                                     continue 4;
                                 // "T"
                                 case 0x54:
-                                    $this->state = HttpScanner_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_2;
+                                    $this->state = HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_2;
                                     $buffer->next();
                                     continue 4;
                                 // "-"
                                 case 0x2D:
-                                    $this->state = HttpScanner_State::YY_HEADER_NAME;
+                                    $this->state = HttpReader_State::YY_HEADER_NAME;
                                     $buffer->next();
                                     continue 4;
                                 // " "
                                 case 0x20:
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("method", $buffer->getString());
+                                    $buffer->next();
                                     continue 4;
                                 // ":"
                                 case 0x3A:
-                                    $this->condition = HttpScanner_Condition::HEADER_VALUE;
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->condition = HttpReader_Condition::HEADER_VALUE;
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("header-name", $buffer->getString());
+                                    $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
-                        case HttpScanner_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_2:
+                        case HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_2:
                             switch ($buffer->peek()) {
                                 // [A-SU-Za-z]
                                 case 0x41:case 0x42:case 0x43:case 0x44:case 0x45:case 0x46:case 0x47:case 0x48:case 0x49:
@@ -177,37 +181,37 @@ class HttpScanner implements Scanner {
                                 case 0x61:case 0x62:case 0x63:case 0x64:case 0x65:case 0x66:case 0x67:case 0x68:case 0x69:
                                 case 0x6A:case 0x6B:case 0x6C:case 0x6D:case 0x6E:case 0x6F:case 0x70:case 0x71:case 0x72:
                                 case 0x73:case 0x74:case 0x75:case 0x76:case 0x77:case 0x78:case 0x79:case 0x7A:
-                                    $this->state = HttpScanner_State::YY_METHOD_OR_HEADER_NAME;
+                                    $this->state = HttpReader_State::YY_METHOD_OR_HEADER_NAME;
                                     $buffer->next();
                                     continue 4;
                                 // "T"
                                 case 0x54:
-                                    $this->state = HttpScanner_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_3;
+                                    $this->state = HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_3;
                                     $buffer->next();
                                     continue 4;
                                 // "-"
                                 case 0x2D:
-                                    $this->state = HttpScanner_State::YY_HEADER_NAME;
+                                    $this->state = HttpReader_State::YY_HEADER_NAME;
                                     $buffer->next();
                                     continue 4;
                                 // " "
                                 case 0x20:
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("method", $buffer->getString());
+                                    $buffer->next();
                                     continue 4;
                                 // ":"
                                 case 0x3A:
-                                    $this->condition = HttpScanner_Condition::HEADER_VALUE;
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->condition = HttpReader_Condition::HEADER_VALUE;
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("header-name", $buffer->getString());
+                                    $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
-                        case HttpScanner_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_3:
+                        case HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_3:
                             switch ($buffer->peek()) {
                                 // [A-OQ-Za-z]
                                 case 0x41:case 0x42:case 0x43:case 0x44:case 0x45:case 0x46:case 0x47:case 0x48:case 0x49:
@@ -216,37 +220,37 @@ class HttpScanner implements Scanner {
                                 case 0x61:case 0x62:case 0x63:case 0x64:case 0x65:case 0x66:case 0x67:case 0x68:case 0x69:
                                 case 0x6A:case 0x6B:case 0x6C:case 0x6D:case 0x6E:case 0x6F:case 0x70:case 0x71:case 0x72:
                                 case 0x73:case 0x74:case 0x75:case 0x76:case 0x77:case 0x78:case 0x79:case 0x7A:
-                                    $this->state = HttpScanner_State::YY_METHOD_OR_HEADER_NAME;
+                                    $this->state = HttpReader_State::YY_METHOD_OR_HEADER_NAME;
                                     $buffer->next();
                                     continue 4;
                                 // "P"
                                 case 0x50:
-                                    $this->state = HttpScanner_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_4;
+                                    $this->state = HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_4;
                                     $buffer->next();
                                     continue 4;
                                 // "-"
                                 case 0x2D:
-                                    $this->state = HttpScanner_State::YY_HEADER_NAME;
+                                    $this->state = HttpReader_State::YY_HEADER_NAME;
                                     $buffer->next();
                                     continue 4;
                                 // " "
                                 case 0x20:
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("method", $buffer->getString());
+                                    $buffer->next();
                                     continue 4;
                                 // ":"
                                 case 0x3A:
-                                    $this->condition = HttpScanner_Condition::HEADER_VALUE;
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->condition = HttpReader_Condition::HEADER_VALUE;
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("header-name", $buffer->getString());
+                                    $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
-                        case HttpScanner_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_4:
+                        case HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_4:
                             switch ($buffer->peek()) {
                                 // [A-Za-z]
                                 case 0x41:case 0x42:case 0x43:case 0x44:case 0x45:case 0x46:case 0x47:case 0x48:case 0x49:
@@ -255,77 +259,77 @@ class HttpScanner implements Scanner {
                                 case 0x61:case 0x62:case 0x63:case 0x64:case 0x65:case 0x66:case 0x67:case 0x68:case 0x69:
                                 case 0x6A:case 0x6B:case 0x6C:case 0x6D:case 0x6E:case 0x6F:case 0x70:case 0x71:case 0x72:
                                 case 0x73:case 0x74:case 0x75:case 0x76:case 0x77:case 0x78:case 0x79:case 0x7A:
-                                    $this->state = HttpScanner_State::YY_METHOD_OR_HEADER_NAME;
+                                    $this->state = HttpReader_State::YY_METHOD_OR_HEADER_NAME;
                                     $buffer->next();
                                     continue 4;
                                 // "/"
                                 case 0x2F:
-                                    $this->state = HttpScanner_State::YY_VERSION_5;
+                                    $this->state = HttpReader_State::YY_VERSION_5;
                                     $buffer->next();
                                     continue 4;
                                 // "-"
                                 case 0x2D:
-                                    $this->state = HttpScanner_State::YY_HEADER_NAME;
+                                    $this->state = HttpReader_State::YY_HEADER_NAME;
                                     $buffer->next();
                                     continue 4;
                                 // " "
                                 case 0x20:
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("method", $buffer->getString());
+                                    $buffer->next();
                                     continue 4;
                                 // ":"
                                 case 0x3A:
-                                    $this->condition = HttpScanner_Condition::HEADER_VALUE;
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->condition = HttpReader_Condition::HEADER_VALUE;
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("header-name", $buffer->getString());
+                                    $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
-                        case HttpScanner_State::YY_VERSION_5:
+                        case HttpReader_State::YY_VERSION_5:
                             switch ($buffer->peek()) {
                                 // "1"
                                 case 0x31:
-                                    $this->state = HttpScanner_State::YY_VERSION_6;
+                                    $this->state = HttpReader_State::YY_VERSION_6;
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
-                        case HttpScanner_State::YY_VERSION_6:
+                        case HttpReader_State::YY_VERSION_6:
                             switch ($buffer->peek()) {
                                 // "."
                                 case 0x2E:
-                                    $this->state = HttpScanner_State::YY_VERSION_7;
+                                    $this->state = HttpReader_State::YY_VERSION_7;
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
-                        case HttpScanner_State::YY_VERSION_7:
+                        case HttpReader_State::YY_VERSION_7:
                             switch ($buffer->peek()) {
                                 // "0"
                                 case 0x30:
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("version", 1.0);
+                                    $buffer->next();
                                     continue 4;
                                 // "1"
                                 case 0x31:
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("version", 1.1);
+                                    $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
-                        case HttpScanner_State::YY_METHOD_OR_HEADER_NAME:
+                        case HttpReader_State::YY_METHOD_OR_HEADER_NAME:
                             switch ($buffer->peek()) {
                                 // [A-Za-z]
                                 case 0x41:case 0x42:case 0x43:case 0x44:case 0x45:case 0x46:case 0x47:case 0x48:case 0x49:
@@ -338,27 +342,27 @@ class HttpScanner implements Scanner {
                                     continue 4;
                                 // "-"
                                 case 0x2D:
-                                    $this->state = HttpScanner_State::YY_HEADER_NAME;
+                                    $this->state = HttpReader_State::YY_HEADER_NAME;
                                     $buffer->next();
                                     continue 4;
                                 // " "
                                 case 0x20:
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("method", $buffer->getString());
+                                    $buffer->next();
                                     continue 4;
                                 // ":"
                                 case 0x3A:
-                                    $this->condition = HttpScanner_Condition::HEADER_VALUE;
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->condition = HttpReader_Condition::HEADER_VALUE;
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("header-name", $buffer->getString());
+                                    $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
-                        case HttpScanner_State::YY_HEADER_NAME:
+                        case HttpReader_State::YY_HEADER_NAME:
                             switch ($buffer->peek()) {
                                 // [A-Za-z-]
                                 case 0x41:case 0x42:case 0x43:case 0x44:case 0x45:case 0x46:case 0x47:case 0x48:case 0x49:
@@ -372,98 +376,110 @@ class HttpScanner implements Scanner {
                                     continue 4;
                                 // ":"
                                 case 0x3A:
-                                    $this->condition = HttpScanner_Condition::HEADER_VALUE;
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next();
+                                    $this->condition = HttpReader_Condition::HEADER_VALUE;
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("header-name", $buffer->getString());
+                                    $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
 
-                        case HttpScanner_State::YY_NL:
+                        case HttpReader_State::YY_NL:
                             switch ($buffer->peek()) {
                                 // "\n"
                                 case 0x0A:
-                                    $this->state = HttpScanner_State::YY_DOUBLE_NL_1;
-                                    $buffer->next();
+                                    $this->state = HttpReader_State::YY_DOUBLE_NL_1;
                                     $this->parser->pushToken("nl");
+                                    $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
-                        case HttpScanner_State::YY_DOUBLE_NL_1:
+                        case HttpReader_State::YY_DOUBLE_NL_1:
                             switch ($buffer->peek()) {
                                 // "\r"
                                 case 0x0D:
-                                    $this->state = HttpScanner_State::YY_DOUBLE_NL_2;
+                                    $this->state = HttpReader_State::YY_DOUBLE_NL_2;
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    $this->state = HttpScanner_State::YY_START;
+                                    $this->state = HttpReader_State::YY_START;
                                     continue 4;
                             }
 
-                        case HttpScanner_State::YY_DOUBLE_NL_2:
+                        case HttpReader_State::YY_DOUBLE_NL_2:
                             switch ($buffer->peek()) {
                                 // "\n"
                                 case 0x0A:
-                                    $this->state = HttpScanner_State::YY_START;
-                                    $buffer->next()->mark();
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("nl");
+                                    $buffer->next()->mark();
                                     $this->parser->endOfTokens();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
                         default:
-                            throw new ScanException();
+                            throw new ReaderException();
                     }
 
-                case HttpScanner_Condition::HEADER_VALUE:
+                case HttpReader_Condition::HEADER_VALUE:
                     switch ($this->state) {
-                        case HttpScanner_State::YY_START:
-                            $this->state = HttpScanner_State::YY_HEADER_VALUE;
-                            $buffer->mark();
+                        case HttpReader_State::YY_START:
+                            $this->state = HttpReader_State::YY_HEADER_SPACE;
                             // continue with next case
-                        case HttpScanner_State::YY_HEADER_VALUE:
+                        case HttpReader_State::YY_HEADER_SPACE:
+                            switch ($buffer->peek()) {
+                                case 0x20:
+                                    $buffer->next()->mark();
+                                    continue 4;
+                                case 0x0D:
+                                    $this->state = HttpReader_State::YY_NL;
+                                    $buffer->next();
+                                    continue 4;
+                                default:
+                                    $this->state = HttpReader_State::YY_HEADER_VALUE;
+                                    $buffer->mark();
+                                    // continue with next case
+                            }
+                        case HttpReader_State::YY_HEADER_VALUE:
                             $c = $buffer->peek();
                             if ($c >= 0x20 && $c <= 0xFE) {
                                 $buffer->next();
                                 continue 3;
                             }
                             if ($c == 0x0D) {
-                                $this->state = HttpScanner_State::YY_NL;
+                                $this->state = HttpReader_State::YY_NL;
                                 $buffer->next();
                                 continue 3;
                             }
-                            throw new ScanException();
+                            throw new ReaderException();
 
-                        case HttpScanner_State::YY_NL:
+                        case HttpReader_State::YY_NL:
                             switch ($buffer->peek()) {
                                 case 0x0A:
-                                    $this->state = HttpScanner_State::YY_INDENT;
+                                    $this->state = HttpReader_State::YY_INDENT;
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ScanException();
+                                    throw new ReaderException();
                             }
 
-                        case HttpScanner_State::YY_INDENT:
+                        case HttpReader_State::YY_INDENT:
                             switch ($buffer->peek()) {
                                 case 0x09:
                                 case 0x20:
-                                    $this->state = HttpScanner_State::YY_START;
+                                    $this->state = HttpReader_State::YY_START;
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    $buffer->back();
-                                    $buffer->back();
-                                    $this->condition = HttpScanner_Condition::MAIN;
-                                    $this->state = HttpScanner_State::YY_START;
+                                    $buffer->back(2);
+                                    $this->condition = HttpReader_Condition::MAIN;
+                                    $this->state = HttpReader_State::YY_START;
                                     $this->parser->pushToken("header-value", $buffer->getString());
                                     continue 4;
                             }

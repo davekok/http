@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace davekok\http;
 
-use davekok\lalr1\Parser;
-use davekok\lalr1\Rule;
-use davekok\lalr1\Symbol;
-use davekok\lalr1\Symbols;
-use davekok\lalr1\SymbolType;
-use davekok\lalr1\Token;
+use davekok\lalr1\attributes\{Rule,Nothing,Solution,Symbol,Symbols};
+use davekok\lalr1\{Parser,SymbolType,Token};
+use davekok\stream\Socket;
+use davekok\stream\ReadyState;
+use davekok\stream\Writer;
+use davekok\stream\WriterBuffer;
+use Psr\Log\LoggerInterface;
 
 #[Symbols(
     new Symbol(SymbolType::ROOT, "request"),
@@ -22,21 +25,38 @@ use davekok\lalr1\Token;
 )]
 class HttpRules
 {
-    private HttpScanner $scanner;
+    private HttpReader $reader;
 
     public function __construct(
+        private LoggerInterface $logger,
         private Parser $parser,
-        private Connection $connection,
+        private Socket $socket,
     ) {
         $this->parser->setRulesObject($this);
-        $this->scanner = new HttpScanner($parser);
-        $this->connection->pushScanner($this->scanner);
+        $this->reader = new HttpReader($this->logger, $parser);
+        $this->socket->setReader($this->reader);
+        $this->socket->setReadyState(ReadyState::ReadReady);
+    }
+
+    #[Nothing]
+    public function nothing(): void
+    {
+        $this->socket->setReadyState(ReadyState::Close);
     }
 
     #[Solution]
-    public function solution(HttpRequest $request): Token
+    public function solution(HttpRequest $request): void
     {
         var_dump($request);
+        $this->socket->setReadyState(ReadyState::WriteReady);
+        $this->socket->setWriter(new class($this->socket) implements Writer {
+            public function __construct(private Socket $socket){}
+            public function write(WriterBuffer $buffer): void
+            {
+                $buffer->add("HTTP/1.1 204 No Content\r\n\r\n");
+                $this->socket->setReadyState(ReadyState::ReadReady);
+            }
+        });
     }
 
     #[Rule("request-line headers nl")]
