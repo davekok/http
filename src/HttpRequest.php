@@ -4,21 +4,15 @@ declare(strict_types=1);
 
 namespace davekok\http;
 
-class HttpRequest
+class HttpRequest extends HttpMessage
 {
-    public function __construct(
-        public readonly string $method,
-        public readonly string $path,
-        public readonly float $protocolVersion,
-        public readonly array $headers
-    ) {}
+    public readonly string $method;
+    public readonly string $path;
 
-    public function __toString(): string {
-        $request = "{$this->method} {$this->path} HTTP/{$this->protocolVersion}\n";
-        foreach ($this->headers as $headerName => $headerValue) {
-            $request .= "{$headerName}:{$headerValue}\n";
-        }
-        $request .= "\n";
-        return $request;
+    public function __construct(string $method, string $path, float $protocolVersion, array $headers = [], string|null $body = null)
+    {
+        parent::__construct($protocolVersion, $headers, $body);
+        $this->method = $method;
+        $this->path   = $path;
     }
 }

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace davekok\http;
 
 use davekok\lalr1\Parser;
+use davekok\stream\Activity;
+use davekok\stream\Reader;
 use davekok\stream\ReaderBuffer;
 use davekok\stream\ReaderException;
-use davekok\stream\Reader;
-use Psr\Log\LoggerInterface;
 
 enum HttpReader_Condition
 {
@@ -48,23 +48,33 @@ enum HttpReader_TokenType
     case T_HEADER_VALUE;
 }
 
-class HttpReader implements Reader {
+/**
+ * TODO: support responses.
+ */
+class HttpReader implements Reader
+{
     public function __construct(
-        private readonly LoggerInterface $logger,
-        private readonly Parser $parser,
+        private Activity $activity,
+        private Parser $parser,
+        private HttpRules $rules,
         private HttpReader_Condition $condition = HttpReader_Condition::MAIN,
         private HttpReader_State $state = HttpReader_State::YY_START,
     ) {}
 
-    public function reset(): void
+    public function receive(HttpRequestHandler|HttpResponseHandler $handler): void
     {
-        $this->condition = HttpReader_Condition::MAIN;
-        $this->state = HttpReader_State::YY_START;
+        $this->activity->andThenRead($this);
+        if ($handler instanceof HttpRequestHandler) {
+            $this->activity->andThen($handler->handleRequest(...));
+        } else {
+            $this->activity->andThen($handler->handleResponse(...));
+        }
     }
 
-    public function endOfInput(ReaderBuffer $buffer): void
+    public function reset(ReaderBuffer $buffer): void
     {
-        $this->parser->endOfTokens();
+        $buffer->reset();
+        $this->parser->reset();
     }
 
     /**
@@ -116,7 +126,9 @@ class HttpReader implements Reader {
                                     $buffer->mark()->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         case HttpReader_State::YY_PATH:
@@ -131,7 +143,9 @@ class HttpReader implements Reader {
                                 $buffer->next();
                                 continue 3;
                             }
-                            throw new ReaderException();
+                            $this->reset($buffer);
+                            $this->activity->push(new ReaderException());
+                            return;
 
                         case HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_1:
                             switch ($buffer->peek()) {
@@ -169,7 +183,9 @@ class HttpReader implements Reader {
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         case HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_2:
@@ -208,7 +224,9 @@ class HttpReader implements Reader {
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         case HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_3:
@@ -247,7 +265,9 @@ class HttpReader implements Reader {
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         case HttpReader_State::YY_METHOD_OR_HEADER_NAME_OR_VERSION_4:
@@ -286,7 +306,9 @@ class HttpReader implements Reader {
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         case HttpReader_State::YY_VERSION_5:
@@ -297,7 +319,9 @@ class HttpReader implements Reader {
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         case HttpReader_State::YY_VERSION_6:
@@ -308,7 +332,9 @@ class HttpReader implements Reader {
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         case HttpReader_State::YY_VERSION_7:
@@ -326,7 +352,9 @@ class HttpReader implements Reader {
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         case HttpReader_State::YY_METHOD_OR_HEADER_NAME:
@@ -359,7 +387,9 @@ class HttpReader implements Reader {
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         case HttpReader_State::YY_HEADER_NAME:
@@ -382,7 +412,9 @@ class HttpReader implements Reader {
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
 
@@ -395,7 +427,9 @@ class HttpReader implements Reader {
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         case HttpReader_State::YY_DOUBLE_NL_1:
@@ -418,13 +452,17 @@ class HttpReader implements Reader {
                                     $this->parser->pushToken("nl");
                                     $buffer->next()->mark();
                                     $this->parser->endOfTokens();
-                                    continue 4;
+                                    return;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         default:
-                            throw new ReaderException();
+                            $this->reset($buffer);
+                            $this->activity->push(new ReaderException());
+                            return;
                     }
 
                 case HttpReader_Condition::HEADER_VALUE:
@@ -457,7 +495,9 @@ class HttpReader implements Reader {
                                 $buffer->next();
                                 continue 3;
                             }
-                            throw new ReaderException();
+                            $this->reset($buffer);
+                            $this->activity->push(new ReaderException());
+                            return;
 
                         case HttpReader_State::YY_NL:
                             switch ($buffer->peek()) {
@@ -466,7 +506,9 @@ class HttpReader implements Reader {
                                     $buffer->next();
                                     continue 4;
                                 default:
-                                    throw new ReaderException();
+                                    $this->reset($buffer);
+                                    $this->activity->push(new ReaderException());
+                                    return;
                             }
 
                         case HttpReader_State::YY_INDENT:
@@ -485,6 +527,12 @@ class HttpReader implements Reader {
                             }
                     }
             }
+        }
+
+        if ($buffer->isLastChunk() === true) {
+            $this->parser->endOfTokens();
+        } else {
+            $this->activity->repeat();
         }
     }
 }

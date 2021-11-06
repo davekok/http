@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace davekok\http;
 
-use davekok\lalr1\attributes\{Rule,Nothing,Solution,Symbol,Symbols};
-use davekok\lalr1\{Parser,SymbolType,Token};
-use davekok\stream\Socket;
+use davekok\lalr1\attributes\{Rule,Solution,Symbol,Symbols};
+use davekok\lalr1\{Parser,ParserException,SymbolType,Token};
+use davekok\stream\Activity;
 use davekok\stream\ReadyState;
-use davekok\stream\Writer;
-use davekok\stream\WriterBuffer;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
+/**
+ * TODO: support responses.
+ */
 #[Symbols(
     new Symbol(SymbolType::ROOT, "request"),
     new Symbol(SymbolType::BRANCH, "request-line"),
@@ -25,38 +27,15 @@ use Psr\Log\LoggerInterface;
 )]
 class HttpRules
 {
-    private HttpReader $reader;
-
     public function __construct(
-        private LoggerInterface $logger,
         private Parser $parser,
-        private Socket $socket,
-    ) {
-        $this->parser->setRulesObject($this);
-        $this->reader = new HttpReader($this->logger, $parser);
-        $this->socket->setReader($this->reader);
-        $this->socket->setReadyState(ReadyState::ReadReady);
-    }
-
-    #[Nothing]
-    public function nothing(): void
-    {
-        $this->socket->setReadyState(ReadyState::Close);
-    }
+        private Activity $activity,
+    ) {}
 
     #[Solution]
-    public function solution(HttpRequest $request): void
+    public function solution(HttpMessage|ParserException $message): void
     {
-        var_dump($request);
-        $this->socket->setReadyState(ReadyState::WriteReady);
-        $this->socket->setWriter(new class($this->socket) implements Writer {
-            public function __construct(private Socket $socket){}
-            public function write(WriterBuffer $buffer): void
-            {
-                $buffer->add("HTTP/1.1 204 No Content\r\n\r\n");
-                $this->socket->setReadyState(ReadyState::ReadReady);
-            }
-        });
+        $this->activity->push($message);
     }
 
     #[Rule("request-line headers nl")]
