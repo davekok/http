@@ -23,9 +23,8 @@ class HttpFactory
     public function createReader(Activity $activity): HttpReader
     {
         $parser = new Parser($this->rules, $this->log);
-        $rules  = new HttpRules($parser, $activity);
-        $parser->setRulesObject($rules);
-        return new HttpReader($activity, $parser, $rules);
+        $parser->setRulesObject(new HttpRules($parser, $activity));
+        return new HttpReader($parser, $activity);
     }
 
     public function createWriter(Activity $activity): HttpWriter

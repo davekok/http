@@ -6,19 +6,19 @@ namespace davekok\http;
 
 use davekok\lalr1\attributes\{Rule,Solution,Symbol,Symbols};
 use davekok\lalr1\{Parser,ParserException,SymbolType,Token};
-use davekok\stream\Activity;
-use davekok\stream\ReadyState;
+use davekok\stream\{Activity,Url};
 use Psr\Log\LoggerInterface;
 use Throwable;
 
-/**
- * TODO: support responses.
- */
 #[Symbols(
-    new Symbol(SymbolType::ROOT, "request"),
+    new Symbol(SymbolType::ROOT, "message"),
     new Symbol(SymbolType::BRANCH, "request-line"),
+    new Symbol(SymbolType::BRANCH, "response-line"),
+    new Symbol(SymbolType::LEAF, "status-code"),
+    new Symbol(SymbolType::LEAF, "status-text"),
     new Symbol(SymbolType::LEAF, "method"),
     new Symbol(SymbolType::LEAF, "path"),
+    new Symbol(SymbolType::LEAF, "query"),
     new Symbol(SymbolType::LEAF, "version"),
     new Symbol(SymbolType::BRANCH, "headers"),
     new Symbol(SymbolType::LEAF, "header-name"),
@@ -41,9 +41,47 @@ class HttpRules
     #[Rule("request-line headers nl")]
     public function reduceRequest(array $tokens): Token
     {
-        ["method" => $method, "path" => $path, "protocolVersion" => $protocolVersion] = $tokens[0]->value;
+        ["method" => $method, "path" => $path, "query" => $query, "protocolVersion" => $protocolVersion] = $tokens[0]->value;
         $headers = $tokens[1]->value;
-        return $this->parser->createToken("request", new HttpRequest($method, $path, $protocolVersion, $headers));
+        $info    = $this->activity->getStreamInfo();
+        if (isset($headers["Host"])) {
+            $hostport = explode(":", $headers["Host"]);
+            [$host, $port] = match (count($hostport)) {
+                2 => $hostport,
+                1 => [$hostport, $info->cryptoEnabled ? 443 : 80],
+            };
+            $port = (int)$port;
+        } else {
+            $host = null;
+            $port = null;
+        }
+        $url = new Url(
+            scheme: $info->cryptoEnabled ? "https" : "http",
+            host:   $host,
+            port:   $port,
+            path:   $path,
+            query:  $query,
+        );
+        return $this->parser->createToken("message", new HttpRequest($method, $url, $protocolVersion, $headers));
+    }
+
+    #[Rule("response-line headers nl")]
+    public function reduceResponse(array $tokens): Token
+    {
+        ["status" => $status, "protocolVersion" => $protocolVersion] = $tokens[0]->value;
+        $headers = $tokens[1]->value;
+        return $this->parser->createToken("message", new HttpResponse($status, $protocolVersion, $headers));
+    }
+
+    #[Rule("method path query version nl")]
+    public function reduceRequestLineWithQuery(array $tokens): Token
+    {
+        return $this->parser->createToken("request-line", [
+            "method" => $tokens[0]->value,
+            "path" => $tokens[1]->value,
+            "query" => $tokens[1]->value,
+            "protocolVersion" => $tokens[2]->value,
+        ]);
     }
 
     #[Rule("method path version nl")]
@@ -52,7 +90,23 @@ class HttpRules
         return $this->parser->createToken("request-line", [
             "method" => $tokens[0]->value,
             "path" => $tokens[1]->value,
+            "query" => null,
             "protocolVersion" => $tokens[2]->value,
+        ]);
+    }
+
+    #[Rule("version status-code status-text nl")]
+    public function reduceResponseLine(array $tokens): Token
+    {
+        $status = Status::tryFrom($tokens[1]->value);
+        if ($status === null || $status->text() !== $tokens[2]->value) {
+            $parserException = new ParserException("Unknown status code or text.");
+            $this->activity->push($parserException)->andThenClose();
+            throw $parserException;
+        }
+        return $this->parser->createToken("response-line", [
+            "status"          => $status,
+            "protocolVersion" => $tokens[0]->value,
         ]);
     }
 
