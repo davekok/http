@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/davekok/lalr1.git",
-                "reference": "5ad7a02d7156b285c38fa55b9c19530c401fde32"
+                "reference": "cd22aba3ccea12224575f88c2e5070bc2c111398"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/lalr1/zipball/5ad7a02d7156b285c38fa55b9c19530c401fde32",
-                "reference": "5ad7a02d7156b285c38fa55b9c19530c401fde32",
+                "url": "https://api.github.com/repos/davekok/lalr1/zipball/cd22aba3ccea12224575f88c2e5070bc2c111398",
+                "reference": "cd22aba3ccea12224575f88c2e5070bc2c111398",
                 "shasum": ""
             },
             "require": {
@@ -50,7 +50,7 @@
                 "source": "https://github.com/davekok/lalr1/tree/main",
                 "issues": "https://github.com/davekok/lalr1/issues"
             },
-            "time": "2021-11-06T10:09:08+00:00"
+            "time": "2021-11-07T07:36:51+00:00"
         },
         {
             "name": "davekok/stream",
@@ -58,12 +58,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/davekok/stream.git",
-                "reference": "1a934f76fb6d11d33f013fee7f480773610c2e99"
+                "reference": "8dd11611af09cd68c6663058c549225b398a8f6f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/stream/zipball/1a934f76fb6d11d33f013fee7f480773610c2e99",
-                "reference": "1a934f76fb6d11d33f013fee7f480773610c2e99",
+                "url": "https://api.github.com/repos/davekok/stream/zipball/8dd11611af09cd68c6663058c549225b398a8f6f",
+                "reference": "8dd11611af09cd68c6663058c549225b398a8f6f",
                 "shasum": ""
             },
             "require": {
@@ -95,7 +95,7 @@
                 "source": "https://github.com/davekok/stream/tree/main",
                 "issues": "https://github.com/davekok/stream/issues"
             },
-            "time": "2021-11-06T10:07:48+00:00"
+            "time": "2021-11-07T07:33:42+00:00"
         },
         {
             "name": "psr/log",

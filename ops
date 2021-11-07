@@ -74,30 +74,38 @@ case "${1:-}" in
         exec "$SELF" build
         ;;
 
-    push)
+    publish)
         podman push "$ID:${2:-latest}"
         ;;
 
     test)
         volumes src test phpunit coverage dependencies
         shift
-        podman run -it --rm -w /app "${VOLUMES[@]}" "$ID:dev" \
+        podman run -it --rm "${VOLUMES[@]}" "$ID:dev" \
             php /app/vendor/bin/phpunit --coverage-html /app/docs/coverage /app/tests $*
         ;;
 
     check)
         volumes src test
-        podman run -it --rm -w /app "${VOLUMES[@]}" "$ID:dev" \
+        podman run -it --rm "${VOLUMES[@]}" "$ID:dev" \
             find src tests -name "*.php" -type f -exec php -l "{}" \;
         ;;
 
     bash)
         volumes src test
-        podman run -it --rm -w /app "${VOLUMES[@]}" "$ID:${2:-dev}" bash
+        podman run -it --rm "${VOLUMES[@]}" "$ID:${2:-dev}" bash
+        ;;
+
+    run)
+        echo "This is a library and can't be run."
+        ;;
+
+    status | add | commit | pull | push | stash | diff)
+        git $*
         ;;
 
     "")
-        echo "Usage: $0 ( login | build | update | require | push | test | check | bash)"
+        echo "Usage: $0 ( login | build | update | require | publish | test | run | check | bash | status | add | commit | pull | push | stash | diff)"
         ;;
 
     *)
