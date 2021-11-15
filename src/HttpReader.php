@@ -47,11 +47,11 @@ class HttpReader implements Reader
 
     public function receive(HttpRequestHandler|HttpResponseHandler $handler): void
     {
-        $this->activity->andThenRead($this);
+        $this->activity->addRead($this);
         if ($handler instanceof HttpRequestHandler) {
-            $this->activity->andThen($handler->handleRequest(...));
+            $this->activity->add($handler->handleRequest(...));
         } else {
-            $this->activity->andThen($handler->handleResponse(...));
+            $this->activity->add($handler->handleResponse(...));
         }
     }
 

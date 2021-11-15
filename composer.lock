@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "69a5fdb9e74428f27a3c66ea4ce2c5cd",
+    "content-hash": "e3b65f9942d329a394a0b3b899aa0215",
     "packages": [
         {
             "name": "davekok/lalr1",
@@ -12,17 +12,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/davekok/lalr1.git",
-                "reference": "fed2b6f024af1c9f022de39817a5f9218b6773b8"
+                "reference": "ced581830e3888325b2f4565ac10e3ccb4533fbe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/lalr1/zipball/fed2b6f024af1c9f022de39817a5f9218b6773b8",
-                "reference": "fed2b6f024af1c9f022de39817a5f9218b6773b8",
+                "url": "https://api.github.com/repos/davekok/lalr1/zipball/ced581830e3888325b2f4565ac10e3ccb4533fbe",
+                "reference": "ced581830e3888325b2f4565ac10e3ccb4533fbe",
                 "shasum": ""
             },
             "require": {
-                "davekok/stream": "dev-main",
-                "psr/log": "^3.0"
+                "davekok/stream": "dev-main"
             },
             "require-dev": {
                 "phpunit/php-code-coverage": "^9.2.x-dev",
@@ -50,7 +49,7 @@
                 "source": "https://github.com/davekok/lalr1/tree/main",
                 "issues": "https://github.com/davekok/lalr1/issues"
             },
-            "time": "2021-11-07T14:47:02+00:00"
+            "time": "2021-11-15T15:09:05+00:00"
         },
         {
             "name": "davekok/stream",
@@ -58,16 +57,13 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/davekok/stream.git",
-                "reference": "839333ddcfdcb01bd6b00eb6c29b0b4d95add33f"
+                "reference": "5cd6e1756988ea9aecdcd8cce2bbd55a5ab4db91"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/stream/zipball/839333ddcfdcb01bd6b00eb6c29b0b4d95add33f",
-                "reference": "839333ddcfdcb01bd6b00eb6c29b0b4d95add33f",
+                "url": "https://api.github.com/repos/davekok/stream/zipball/5cd6e1756988ea9aecdcd8cce2bbd55a5ab4db91",
+                "reference": "5cd6e1756988ea9aecdcd8cce2bbd55a5ab4db91",
                 "shasum": ""
-            },
-            "require": {
-                "psr/log": "^3.0"
             },
             "require-dev": {
                 "mikey179/vfsstream": "^1.6",
@@ -95,57 +91,7 @@
                 "source": "https://github.com/davekok/stream/tree/main",
                 "issues": "https://github.com/davekok/stream/issues"
             },
-            "time": "2021-11-07T14:41:44+00:00"
-        },
-        {
-            "name": "psr/log",
-            "version": "3.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-fig/log.git",
-                "reference": "fe5ea303b0887d5caefd3d431c3e61ad47037001"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/fe5ea303b0887d5caefd3d431c3e61ad47037001",
-                "reference": "fe5ea303b0887d5caefd3d431c3e61ad47037001",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.0.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Log\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "PHP-FIG",
-                    "homepage": "https://www.php-fig.org/"
-                }
-            ],
-            "description": "Common interface for logging libraries",
-            "homepage": "https://github.com/php-fig/log",
-            "keywords": [
-                "log",
-                "psr",
-                "psr-3"
-            ],
-            "support": {
-                "source": "https://github.com/php-fig/log/tree/3.0.0"
-            },
-            "time": "2021-07-14T16:46:02+00:00"
+            "time": "2021-11-15T15:05:56+00:00"
         }
     ],
     "packages-dev": [
@@ -1520,16 +1466,16 @@
         },
         {
             "name": "sebastian/exporter",
-            "version": "4.0.3",
+            "version": "4.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/exporter.git",
-                "reference": "d89cc98761b8cb5a1a235a6b703ae50d34080e65"
+                "reference": "65e8b7db476c5dd267e65eea9cab77584d3cfff9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/exporter/zipball/d89cc98761b8cb5a1a235a6b703ae50d34080e65",
-                "reference": "d89cc98761b8cb5a1a235a6b703ae50d34080e65",
+                "url": "https://api.github.com/repos/sebastianbergmann/exporter/zipball/65e8b7db476c5dd267e65eea9cab77584d3cfff9",
+                "reference": "65e8b7db476c5dd267e65eea9cab77584d3cfff9",
                 "shasum": ""
             },
             "require": {
@@ -1578,14 +1524,14 @@
                 }
             ],
             "description": "Provides the functionality to export PHP variables for visualization",
-            "homepage": "http://www.github.com/sebastianbergmann/exporter",
+            "homepage": "https://www.github.com/sebastianbergmann/exporter",
             "keywords": [
                 "export",
                 "exporter"
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/exporter/issues",
-                "source": "https://github.com/sebastianbergmann/exporter/tree/4.0.3"
+                "source": "https://github.com/sebastianbergmann/exporter/tree/4.0.4"
             },
             "funding": [
                 {
@@ -1593,7 +1539,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2020-09-28T05:24:23+00:00"
+            "time": "2021-11-11T14:18:36+00:00"
         },
         {
             "name": "sebastian/global-state",

@@ -7,7 +7,6 @@ namespace davekok\http;
 use davekok\lalr1\attributes\{Rule,Solution,Symbol,Symbols};
 use davekok\lalr1\{Parser,ParserException,SymbolType,Token};
 use davekok\stream\{Activity,Url};
-use Psr\Log\LoggerInterface;
 use Throwable;
 
 #[Symbols(
@@ -101,7 +100,7 @@ class HttpRules
         $status = Status::tryFrom($tokens[1]->value);
         if ($status === null || $status->text() !== $tokens[2]->value) {
             $parserException = new ParserException("Unknown status code or text.");
-            $this->activity->push($parserException)->andThenClose();
+            $this->activity->addClose()->push($parserException);
             throw $parserException;
         }
         return $this->parser->createToken("response-line", [

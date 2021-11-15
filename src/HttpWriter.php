@@ -9,7 +9,6 @@ use davekok\stream\ReadyState;
 use davekok\stream\Writer;
 use davekok\stream\WriterBuffer;
 use davekok\stream\WriterException;
-use Psr\Log\LoggerInterface;
 
 class HttpWriter implements Writer
 {
@@ -20,7 +19,7 @@ class HttpWriter implements Writer
     public function send(HttpMessage $message): void
     {
         $this->message = $message;
-        $this->activity->andThenWrite($this);
+        $this->activity->addWrite($this);
     }
 
     public function write(WriterBuffer $buffer): void
