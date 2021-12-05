@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace davekok\http;
 
-use davekok\stream\Activity;
-use davekok\stream\ReadyState;
-use davekok\stream\Writer;
-use davekok\stream\WriteBuffer;
+use davekok\kernel\Writer;
+use davekok\kernel\WriteBuffer;
 use ArrayIterator;
 
 enum HttpWriter_State

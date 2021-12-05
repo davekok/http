@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace davekok\http;
 
-use davekok\kernel\{Actionable,Url};
+use davekok\kernel\{Actionable,Cryptoble,Url};
 use davekok\lalr1\attributes\{Rule,Symbol,Symbols};
 use davekok\lalr1\{Parser,ParserException,Rules,SymbolType,Token};
 use Throwable;
@@ -38,7 +38,7 @@ class HttpRules implements Rules
     }
 
     #[Rule("RequestLine Headers NewLine")]
-    public function reduceRequest(array $tokens): Token
+    public function createRequest(array $tokens): Token
     {
         ["method" => $method, "path" => $path, "query" => $query, "protocolVersion" => $protocolVersion] = $tokens[0]->value;
         $headers = $tokens[1]->value;
@@ -47,7 +47,7 @@ class HttpRules implements Rules
             $hostport = explode(":", $headers["Host"]);
             [$host, $port] = match (count($hostport)) {
                 2 => $hostport,
-                1 => [$hostport, $cryptoEnabled ? 443 : 80],
+                1 => [...$hostport, $cryptoEnabled ? 443 : 80],
             };
             $port = (int)$port;
         }
@@ -58,32 +58,55 @@ class HttpRules implements Rules
             path:   $path,
             query:  $query,
         );
-        return $this->parser->createToken("message", new HttpRequest($method, $url, $protocolVersion, $headers));
+        return $this->parser->createToken("Message", new HttpRequest($method, $url, $protocolVersion, $headers));
+    }
+
+    #[Rule("RequestLine NewLine")]
+    public function createRequestNoHeaders(array $tokens): Token
+    {
+        ["method" => $method, "path" => $path, "query" => $query, "protocolVersion" => $protocolVersion] = $tokens[0]->value;
+        $cryptoEnabled = $this->actionable instanceof Cryptoble ? $this->actionable->isCryptoEnabled() : false;
+        $url = new Url(
+            scheme: $cryptoEnabled ? "https" : "http",
+            host:   $host ?? null,
+            port:   $port ?? null,
+            path:   $path,
+            query:  $query,
+        );
+        return $this->parser->createToken("Message", new HttpRequest($method, $url, $protocolVersion));
     }
 
     #[Rule("ResponseLine Headers NewLine")]
-    public function reduceResponse(array $tokens): Token
+    public function createResponse(array $tokens): Token
     {
         ["status" => $status, "protocolVersion" => $protocolVersion] = $tokens[0]->value;
         $headers = $tokens[1]->value;
-        return $this->parser->createToken("message", new HttpResponse($status, $protocolVersion, $headers));
+        return $this->parser->createToken("Message", new HttpResponse($status, $protocolVersion, $headers));
+    }
+
+    #[Rule("ResponseLine NewLine")]
+    public function createResponseNoHeaders(array $tokens): Token
+    {
+        ["status" => $status, "protocolVersion" => $protocolVersion] = $tokens[0]->value;
+        $headers = $tokens[1]->value;
+        return $this->parser->createToken("Message", new HttpResponse($status, $protocolVersion));
     }
 
     #[Rule("Method Path Query Version NewLine")]
-    public function reduceRequestLineWithQuery(array $tokens): Token
+    public function createRequestLineWithQuery(array $tokens): Token
     {
-        return $this->parser->createToken("request-line", [
+        return $this->parser->createToken("RequestLine", [
             "method" => $tokens[0]->value,
             "path" => $tokens[1]->value,
-            "query" => $tokens[1]->value,
-            "protocolVersion" => $tokens[2]->value,
+            "query" => $tokens[2]->value,
+            "protocolVersion" => $tokens[3]->value,
         ]);
     }
 
     #[Rule("Method Path Version NewLine")]
-    public function reduceRequestLine(array $tokens): Token
+    public function createRequestLine(array $tokens): Token
     {
-        return $this->parser->createToken("request-line", [
+        return $this->parser->createToken("RequestLine", [
             "method" => $tokens[0]->value,
             "path" => $tokens[1]->value,
             "query" => null,
@@ -92,9 +115,9 @@ class HttpRules implements Rules
     }
 
     #[Rule("Version StatusCode StatusText NewLine")]
-    public function reduceResponseLine(array $tokens): Token
+    public function createResponseLine(array $tokens): Token
     {
-        $status = Status::tryFrom($tokens[1]->value);
+        $status = HttpStatus::tryFrom($tokens[1]->value);
         if ($status === null || $status->text() !== $tokens[2]->value) {
             throw new ParserException("Unknown status code or text.");
         }
@@ -105,9 +128,9 @@ class HttpRules implements Rules
     }
 
     #[Rule("HeaderKey HeaderValue NewLine")]
-    public function startHeaders(array $tokens): Token
+    public function createHeaders(array $tokens): Token
     {
-        return $this->parser->createToken("headers", [$tokens[0]->value => $tokens[1]->value]);
+        return $this->parser->createToken("Headers", [$tokens[0]->value => $tokens[1]->value]);
     }
 
     #[Rule("Headers HeaderKey HeaderValue NewLine")]

@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace davekok\http;
 
 use davekok\lalr1\Parser;
-use davekok\stream\Activity;
-use davekok\stream\ReadBuffer;
-use davekok\stream\Reader;
-use davekok\stream\ReaderException;
+use davekok\kernel\ReadBuffer;
+use davekok\kernel\Reader;
+use davekok\kernel\ReaderException;
 use Throwable;
 
 enum HttpReader_Condition
@@ -198,7 +197,7 @@ class HttpReader implements Reader
                                     case 0x3A:
                                         $this->condition = HttpReader_Condition::HEADER;
                                         $this->state     = HttpReader_State::YY_START;
-                                        $this->parser->pushToken("HeaderName", $buffer->getString());
+                                        $this->parser->pushToken("HeaderKey", $buffer->getString());
                                         $buffer->next();
                                         continue 4;
                                     default:
@@ -254,7 +253,7 @@ class HttpReader implements Reader
                                     case 0x3A:
                                         $this->condition = HttpReader_Condition::HEADER;
                                         $this->state = HttpReader_State::YY_START;
-                                        $this->parser->pushToken("HeaderName", $buffer->getString());
+                                        $this->parser->pushToken("HeaderKey", $buffer->getString());
                                         $buffer->next();
                                         continue 4;
                                     default:
@@ -277,7 +276,7 @@ class HttpReader implements Reader
                                     case 0x3A:
                                         $this->condition = HttpReader_Condition::HEADER;
                                         $this->state = HttpReader_State::YY_START;
-                                        $this->parser->pushToken("HeaderName", $buffer->getString());
+                                        $this->parser->pushToken("HeaderKey", $buffer->getString());
                                         $buffer->next();
                                         continue 4;
                                     default:

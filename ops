@@ -32,11 +32,8 @@ function volumes() {
                 VOLUMES+=("-v" "./docs/coverage:/app/docs/coverage:rw")
                 ;;
             dependencies)
-                if [ -d "../log/src" ]; then
-                    VOLUMES+=("-v" "../log/src:/app/vendor/davekok/log/src:ro")
-                fi
-                if [ -d "../stream/src" ]; then
-                    VOLUMES+=("-v" "../stream/src:/app/vendor/davekok/stream/src:ro")
+                if [ -d "../kernel/src" ]; then
+                    VOLUMES+=("-v" "../kernel/src:/app/vendor/davekok/kernel/src:ro")
                 fi
                 if [ -d "../lalr1/src" ]; then
                     VOLUMES+=("-v" "../lalr1/src:/app/vendor/davekok/lalr1/src:ro")

@@ -24,14 +24,14 @@ abstract class HttpMessage
     public const LAST_MODIFIED  = "Last-Modified";
     public const SERVER         = "Server";
 
+    private const ACCEPT_REGEX =
+        "~ *(application|audio|example|font|image|message|model|multipart|text|*)/([A-Za-z0-9._-]+|*)(?:;q=(1|0\.[0-9]+))?~";
+
     public function __construct(
         public readonly float|null  $protocolVersion = null,
         public readonly array       $headers         = [],
         public readonly string|null $body            = null,
     ) {}
-
-    private const REGEX =
-        "~ *(application|audio|example|font|image|message|model|multipart|text|*)/([A-Za-z0-9._-]+|*)(?:;q=(1|0\.[0-9]+))?~";
 
     public function accept(array $supported): string|null
     {
@@ -51,8 +51,8 @@ abstract class HttpMessage
         }
         $currentQuality = 0;
         $use            = null;
-        foreach (explode("," $accept) as $mimeType) {
-            if (preg_match(self::REGEX, $mimeType, $matches) === 1) {
+        foreach (explode(",", $accept) as $mimeType) {
+            if (preg_match(self::ACCEPT_REGEX, $mimeType, $matches) === 1) {
                 $mimeType    = $matches[1];
                 $subMimeType = $matches[2];
                 $quality     = (float)($matches[3] ?? 1);

@@ -7,8 +7,9 @@ namespace davekok\http;
 use davekok\lalr1\Parser;
 use davekok\lalr1\RulesBag;
 use davekok\lalr1\RulesBagFactory;
-use davekok\stream\Readable;
-use davekok\stream\Writable;
+use davekok\kernel\Actionable;
+use davekok\kernel\Readable;
+use davekok\kernel\Writable;
 use ReflectionClass;
 
 class HttpComponent

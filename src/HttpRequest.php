@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace davekok\http;
 
-use davekok\stream\Url;
+use davekok\kernel\Url;
 
 class HttpRequest extends HttpMessage
 {
