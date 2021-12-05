@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/davekok/kernel.git",
-                "reference": "75d36f065e2fe826e8ec6330fb9593b1096ca7ca"
+                "reference": "1c1b027b31260e95cbf115dbd183a3cac6e17bb2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/kernel/zipball/75d36f065e2fe826e8ec6330fb9593b1096ca7ca",
-                "reference": "75d36f065e2fe826e8ec6330fb9593b1096ca7ca",
+                "url": "https://api.github.com/repos/davekok/kernel/zipball/1c1b027b31260e95cbf115dbd183a3cac6e17bb2",
+                "reference": "1c1b027b31260e95cbf115dbd183a3cac6e17bb2",
                 "shasum": ""
             },
             "require": {
@@ -49,7 +49,7 @@
                 "source": "https://github.com/davekok/kernel/tree/main",
                 "issues": "https://github.com/davekok/kernel/issues"
             },
-            "time": "2021-12-05T07:14:01+00:00"
+            "time": "2021-12-05T09:30:16+00:00"
         },
         {
             "name": "davekok/lalr1",
@@ -57,12 +57,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/davekok/lalr1.git",
-                "reference": "ba4566d22bc7b74b3303bd526c123af402903ed1"
+                "reference": "811dfe1a70421fc68911a38be4d93cac5a9140d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/lalr1/zipball/ba4566d22bc7b74b3303bd526c123af402903ed1",
-                "reference": "ba4566d22bc7b74b3303bd526c123af402903ed1",
+                "url": "https://api.github.com/repos/davekok/lalr1/zipball/811dfe1a70421fc68911a38be4d93cac5a9140d9",
+                "reference": "811dfe1a70421fc68911a38be4d93cac5a9140d9",
                 "shasum": ""
             },
             "require-dev": {
@@ -91,7 +91,7 @@
                 "source": "https://github.com/davekok/lalr1/tree/main",
                 "issues": "https://github.com/davekok/lalr1/issues"
             },
-            "time": "2021-12-05T07:16:44+00:00"
+            "time": "2021-12-05T09:30:42+00:00"
         },
         {
             "name": "psr/log",
@@ -672,12 +672,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "f301eb1453c9e7a1bc912ee8b0ea9db22c60223b"
+                "reference": "299e0a60b0f5bd3296fd52290a585ac2b2517b65"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/f301eb1453c9e7a1bc912ee8b0ea9db22c60223b",
-                "reference": "f301eb1453c9e7a1bc912ee8b0ea9db22c60223b",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/299e0a60b0f5bd3296fd52290a585ac2b2517b65",
+                "reference": "299e0a60b0f5bd3296fd52290a585ac2b2517b65",
                 "shasum": ""
             },
             "require": {
@@ -733,7 +733,7 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
-                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.9"
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2"
             },
             "funding": [
                 {
@@ -741,7 +741,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-11-19T15:21:02+00:00"
+            "time": "2021-12-05T09:19:13+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
