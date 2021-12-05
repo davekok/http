@@ -22,7 +22,7 @@ class ReaderTest extends TestCase
      */
     public function testReadResponse(): void
     {
-        $text = "HTTP/1.1 204 No Content\r\nHost: davekok.http.example\r\n\r\n";
+        $text   = "HTTP/1.1 204 No Content\r\nHost: davekok.http.example\r\n\r\n";
         $parser = $this->createMock(Parser::class);
         $parser->expects(static::exactly(8))
             ->method("pushToken")
@@ -48,7 +48,7 @@ class ReaderTest extends TestCase
      */
     public function testReadRequest(): void
     {
-        $text = "GET /some/path?sdf=sdf HTTP/1.1\r\nHost: davekok.http.example\r\n\r\n";
+        $text   = "GET /some/path?sdf=sdf HTTP/1.1\r\nHost: davekok.http.example\r\n\r\n";
         $parser = $this->createMock(Parser::class);
         $parser->expects(static::exactly(9))
             ->method("pushToken")
