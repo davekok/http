@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace davekok\http\tests;
 
-use davekok\http\HttpComponent;
+use davekok\http\HttpContainerFactory;
+use davekok\http\HttpFilter;
 use davekok\http\HttpMessage;
 use davekok\http\HttpReader;
 use davekok\http\HttpRequest;
@@ -12,9 +13,10 @@ use davekok\http\HttpResponse;
 use davekok\http\HttpStatus;
 use davekok\kernel\Actionable;
 use davekok\kernel\ActiveSocket;
+use davekok\kernel\Readable;
 use davekok\kernel\ReadBuffer;
 use davekok\kernel\Url;
-use davekok\lalr1\Parser;
+use davekok\parser\Parser;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -25,8 +27,11 @@ class ReaderTest extends TestCase
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpResponse::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -38,7 +43,6 @@ class ReaderTest extends TestCase
      */
     public function testReadResponse(): void
     {
-        $text = "HTTP/1.1 204 No Content\r\nHost: davekok.http.example\r\n\r\n";
         static::assertEquals(
             new HttpResponse(
                 status: HttpStatus::NO_CONTENT,
@@ -47,15 +51,18 @@ class ReaderTest extends TestCase
                     "Host" => "davekok.http.example",
                 ],
             ),
-            (new HttpComponent)->createReader($this->createMock(Actionable::class))->read(new ReadBuffer($text))
+            $this->read("HTTP/1.1 204 No Content\r\nHost: davekok.http.example\r\n\r\n")
         );
     }
 
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpResponse::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -66,21 +73,23 @@ class ReaderTest extends TestCase
      */
     public function testReadResponseNoHeaders(): void
     {
-        $text = "HTTP/1.1 204 No Content\r\n\r\n";
         static::assertEquals(
             new HttpResponse(
                 status: HttpStatus::NO_CONTENT,
                 protocolVersion: 1.1,
             ),
-            (new HttpComponent)->createReader($this->createMock(Actionable::class))->read(new ReadBuffer($text))
+            $this->read("HTTP/1.1 204 No Content\r\n\r\n")
         );
     }
 
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpResponse::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -93,7 +102,6 @@ class ReaderTest extends TestCase
      */
     public function testReadResponseMultipleHeaders(): void
     {
-        $text = "HTTP/1.1 204 No Content\r\nDate: today\r\nHost: davekok.http.exemple\r\n\r\n";
         static::assertEquals(
             new HttpResponse(
                 status: HttpStatus::NO_CONTENT,
@@ -103,15 +111,18 @@ class ReaderTest extends TestCase
                     "Host" => "davekok.http.exemple",
                 ]
             ),
-            (new HttpComponent)->createReader($this->createMock(Actionable::class))->read(new ReadBuffer($text))
+            $this->read("HTTP/1.1 204 No Content\r\nDate: today\r\nHost: davekok.http.exemple\r\n\r\n")
         );
     }
 
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpRequest::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -122,7 +133,6 @@ class ReaderTest extends TestCase
      */
     public function testReadRequest(): void
     {
-        $text = "GET /some/path HTTP/1.1\r\nHost: davekok.http.example\r\n\r\n";
         static::assertEquals(
             new HttpRequest(
                 method: HttpMessage::GET,
@@ -137,15 +147,18 @@ class ReaderTest extends TestCase
                     "Host" => "davekok.http.example",
                 ],
             ),
-            (new HttpComponent)->createReader($this->createMock(Actionable::class))->read(new ReadBuffer($text))
+            $this->read("GET /some/path HTTP/1.1\r\nHost: davekok.http.example\r\n\r\n")
         );
     }
 
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpRequest::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -156,7 +169,6 @@ class ReaderTest extends TestCase
      */
     public function testReadRequestWithQuery(): void
     {
-        $text = "GET /some/path?sdf=sdf HTTP/1.1\r\nHost: davekok.http.example\r\n\r\n";
         static::assertEquals(
             new HttpRequest(
                 method: HttpMessage::GET,
@@ -172,15 +184,18 @@ class ReaderTest extends TestCase
                     "Host" => "davekok.http.example",
                 ],
             ),
-            (new HttpComponent)->createReader($this->createMock(Actionable::class))->read(new ReadBuffer($text))
+            $this->read("GET /some/path?sdf=sdf HTTP/1.1\r\nHost: davekok.http.example\r\n\r\n")
         );
     }
 
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpRequest::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -191,7 +206,6 @@ class ReaderTest extends TestCase
      */
     public function testReadRequestWithPort(): void
     {
-        $text = "GET /some/path HTTP/1.1\r\nHost: davekok.http.example:28437\r\n\r\n";
         static::assertEquals(
             new HttpRequest(
                 method: HttpMessage::GET,
@@ -206,15 +220,18 @@ class ReaderTest extends TestCase
                     "Host" => "davekok.http.example:28437",
                 ],
             ),
-            (new HttpComponent)->createReader($this->createMock(Actionable::class))->read(new ReadBuffer($text))
+            $this->read("GET /some/path HTTP/1.1\r\nHost: davekok.http.example:28437\r\n\r\n")
         );
     }
 
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpRequest::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -225,9 +242,6 @@ class ReaderTest extends TestCase
      */
     public function testReadRequestFromCryptobleSourceEnabled(): void
     {
-        $text = "GET /some/path HTTP/1.1\r\nHost: davekok.https.example\r\n\r\n";
-        $socket = $this->createMock(ActiveSocket::class);
-        $socket->expects(static::once())->method('isCryptoEnabled')->willReturn(true);
         static::assertEquals(
             new HttpRequest(
                 method: HttpMessage::GET,
@@ -242,15 +256,18 @@ class ReaderTest extends TestCase
                     "Host" => "davekok.https.example",
                 ],
             ),
-            (new HttpComponent)->createReader($socket)->read(new ReadBuffer($text))
+            $this->read("GET /some/path HTTP/1.1\r\nHost: davekok.https.example\r\n\r\n", true)
         );
     }
 
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpRequest::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -261,9 +278,6 @@ class ReaderTest extends TestCase
      */
     public function testReadRequestFromCryptobleSourceDisabled(): void
     {
-        $text = "GET /some/path HTTP/1.1\r\nHost: davekok.http.example\r\n\r\n";
-        $socket = $this->createMock(ActiveSocket::class);
-        $socket->expects(static::once())->method('isCryptoEnabled')->willReturn(false);
         static::assertEquals(
             new HttpRequest(
                 method: HttpMessage::GET,
@@ -278,15 +292,18 @@ class ReaderTest extends TestCase
                     "Host" => "davekok.http.example",
                 ],
             ),
-            (new HttpComponent)->createReader($socket)->read(new ReadBuffer($text))
+            $this->read("GET /some/path HTTP/1.1\r\nHost: davekok.http.example\r\n\r\n")
         );
     }
 
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpRequest::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -296,7 +313,6 @@ class ReaderTest extends TestCase
      */
     public function testReadRequestNoHeaders(): void
     {
-        $text = "GET /some/path HTTP/1.1\r\n\r\n";
         static::assertEquals(
             new HttpRequest(
                 method: HttpMessage::GET,
@@ -306,15 +322,18 @@ class ReaderTest extends TestCase
                 ),
                 protocolVersion: 1.1,
             ),
-            (new HttpComponent)->createReader($this->createMock(Actionable::class))->read(new ReadBuffer($text))
+            $this->read("GET /some/path HTTP/1.1\r\n\r\n")
         );
     }
 
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpRequest::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -324,9 +343,6 @@ class ReaderTest extends TestCase
      */
     public function testReadRequestNoHeadersCryptoEnabled(): void
     {
-        $text = "GET /some/path HTTP/1.1\r\n\r\n";
-        $socket = $this->createMock(ActiveSocket::class);
-        $socket->expects(static::once())->method('isCryptoEnabled')->willReturn(true);
         static::assertEquals(
             new HttpRequest(
                 method: HttpMessage::GET,
@@ -336,15 +352,18 @@ class ReaderTest extends TestCase
                 ),
                 protocolVersion: 1.1,
             ),
-            (new HttpComponent)->createReader($socket)->read(new ReadBuffer($text))
+            $this->read("GET /some/path HTTP/1.1\r\n\r\n", true)
         );
     }
 
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpRequest::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -355,8 +374,6 @@ class ReaderTest extends TestCase
     public function testReadRequestNoHeadersCryptoDisabled(): void
     {
         $text = "GET /some/path HTTP/1.1\r\n\r\n";
-        $socket = $this->createMock(ActiveSocket::class);
-        $socket->expects(static::once())->method('isCryptoEnabled')->willReturn(false);
         static::assertEquals(
             new HttpRequest(
                 method: HttpMessage::GET,
@@ -366,15 +383,18 @@ class ReaderTest extends TestCase
                 ),
                 protocolVersion: 1.1,
             ),
-            (new HttpComponent)->createReader($socket)->read(new ReadBuffer($text))
+            $this->read($text)
         );
     }
 
     /**
      * @covers ::__construct
      * @covers ::read
-     * @covers \davekok\http\HttpComponent::__construct
-     * @covers \davekok\http\HttpComponent::createReader
+     * @covers \davekok\http\HttpContainerFactory::__construct
+     * @covers \davekok\http\HttpContainerFactory::createContainer
+     * @covers \davekok\http\HttpContainer::__construct
+     * @covers \davekok\http\HttpFilter::__construct
+     * @covers \davekok\http\HttpFilter::createReader
      * @covers \davekok\http\HttpMessage::__construct
      * @covers \davekok\http\HttpRequest::__construct
      * @covers \davekok\http\HttpRules::__construct
@@ -396,7 +416,16 @@ class ReaderTest extends TestCase
                 protocolVersion: 1.1,
                 headers: ["Some" => "header"],
             ),
-            (new HttpComponent)->createReader($this->createMock(Actionable::class))->read(new ReadBuffer($text))
+            $this->read($text)
         );
+    }
+
+    private function read(string $text, bool $isCryptoEnabled = false): HttpMessage
+    {
+        return (new HttpContainerFactory)
+            ->createContainer()
+            ->filter
+            ->createReader($isCryptoEnabled)
+            ->read(new ReadBuffer($text));
     }
 }

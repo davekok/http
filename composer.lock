@@ -4,23 +4,66 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "df08a1cf07db2a31b89d701855a58f18",
+    "content-hash": "1c543e0d25ac15d0994662d7bb85107c",
     "packages": [
+        {
+            "name": "davekok/container",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/davekok/container.git",
+                "reference": "ebbbdfa11d52c22143d37fa532b2ecad4172f396"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/davekok/container/zipball/ebbbdfa11d52c22143d37fa532b2ecad4172f396",
+                "reference": "ebbbdfa11d52c22143d37fa532b2ecad4172f396",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpunit/php-code-coverage": "^9.2.x-dev",
+                "phpunit/phpunit": "^9.5"
+            },
+            "default-branch": true,
+            "type": "project",
+            "autoload": {
+                "psr-4": {
+                    "davekok\\container\\": "src/",
+                    "davekok\\container\\tests\\": "tests/"
+                }
+            },
+            "license": [
+                "UNLICENSE"
+            ],
+            "authors": [
+                {
+                    "name": "Dave Kok",
+                    "email": "email@davekok.nl"
+                }
+            ],
+            "description": "Container abstraction",
+            "support": {
+                "source": "https://github.com/davekok/container/tree/main",
+                "issues": "https://github.com/davekok/container/issues"
+            },
+            "time": "2021-12-15T12:42:06+00:00"
+        },
         {
             "name": "davekok/kernel",
             "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/davekok/kernel.git",
-                "reference": "1c1b027b31260e95cbf115dbd183a3cac6e17bb2"
+                "reference": "c96e9f49ec42ab576ce343eb7ea91e5fe643b748"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/kernel/zipball/1c1b027b31260e95cbf115dbd183a3cac6e17bb2",
-                "reference": "1c1b027b31260e95cbf115dbd183a3cac6e17bb2",
+                "url": "https://api.github.com/repos/davekok/kernel/zipball/c96e9f49ec42ab576ce343eb7ea91e5fe643b748",
+                "reference": "c96e9f49ec42ab576ce343eb7ea91e5fe643b748",
                 "shasum": ""
             },
             "require": {
+                "davekok/container": "dev-main",
                 "psr/log": "^3.0"
             },
             "require-dev": {
@@ -49,20 +92,20 @@
                 "source": "https://github.com/davekok/kernel/tree/main",
                 "issues": "https://github.com/davekok/kernel/issues"
             },
-            "time": "2021-12-05T09:30:16+00:00"
+            "time": "2021-12-15T14:52:23+00:00"
         },
         {
-            "name": "davekok/lalr1",
+            "name": "davekok/parser",
             "version": "dev-main",
             "source": {
                 "type": "git",
-                "url": "https://github.com/davekok/lalr1.git",
-                "reference": "811dfe1a70421fc68911a38be4d93cac5a9140d9"
+                "url": "https://github.com/davekok/parser.git",
+                "reference": "31357c70385c2e7e36832bc8e972101f087eaa2f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/lalr1/zipball/811dfe1a70421fc68911a38be4d93cac5a9140d9",
-                "reference": "811dfe1a70421fc68911a38be4d93cac5a9140d9",
+                "url": "https://api.github.com/repos/davekok/parser/zipball/31357c70385c2e7e36832bc8e972101f087eaa2f",
+                "reference": "31357c70385c2e7e36832bc8e972101f087eaa2f",
                 "shasum": ""
             },
             "require-dev": {
@@ -73,8 +116,8 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "davekok\\lalr1\\": "src/",
-                    "davekok\\lalr1\\tests\\": "tests/"
+                    "davekok\\parser\\": "src/",
+                    "davekok\\parser\\tests\\": "tests/"
                 }
             },
             "license": [
@@ -86,12 +129,12 @@
                     "email": "email@davekok.nl"
                 }
             ],
-            "description": "A Look Ahead, Left to right, Right most derivation algorithm implementation.",
+            "description": "A Look Ahead, Left to right, Right most derivation parser.",
             "support": {
-                "source": "https://github.com/davekok/lalr1/tree/main",
-                "issues": "https://github.com/davekok/lalr1/issues"
+                "source": "https://github.com/davekok/parser/tree/main",
+                "issues": "https://github.com/davekok/parser/issues"
             },
-            "time": "2021-12-05T09:30:42+00:00"
+            "time": "2021-12-15T13:03:48+00:00"
         },
         {
             "name": "psr/log",
@@ -601,16 +644,16 @@
         },
         {
             "name": "phpspec/prophecy",
-            "version": "1.14.0",
+            "version": "v1.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpspec/prophecy.git",
-                "reference": "d86dfc2e2a3cd366cee475e52c6bb3bbc371aa0e"
+                "reference": "bbcd7380b0ebf3961ee21409db7b38bc31d69a13"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/d86dfc2e2a3cd366cee475e52c6bb3bbc371aa0e",
-                "reference": "d86dfc2e2a3cd366cee475e52c6bb3bbc371aa0e",
+                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/bbcd7380b0ebf3961ee21409db7b38bc31d69a13",
+                "reference": "bbcd7380b0ebf3961ee21409db7b38bc31d69a13",
                 "shasum": ""
             },
             "require": {
@@ -662,9 +705,9 @@
             ],
             "support": {
                 "issues": "https://github.com/phpspec/prophecy/issues",
-                "source": "https://github.com/phpspec/prophecy/tree/1.14.0"
+                "source": "https://github.com/phpspec/prophecy/tree/v1.15.0"
             },
-            "time": "2021-09-10T09:02:12+00:00"
+            "time": "2021-12-08T12:19:24+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -672,12 +715,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "299e0a60b0f5bd3296fd52290a585ac2b2517b65"
+                "reference": "747f93928bcac855054f2781c209ec80d469fe14"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/299e0a60b0f5bd3296fd52290a585ac2b2517b65",
-                "reference": "299e0a60b0f5bd3296fd52290a585ac2b2517b65",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/747f93928bcac855054f2781c209ec80d469fe14",
+                "reference": "747f93928bcac855054f2781c209ec80d469fe14",
                 "shasum": ""
             },
             "require": {
@@ -741,7 +784,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-12-05T09:19:13+00:00"
+            "time": "2021-12-13T15:03:35+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -2242,8 +2285,9 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "davekok/container": 20,
         "davekok/kernel": 20,
-        "davekok/lalr1": 20,
+        "davekok/parser": 20,
         "phpunit/php-code-coverage": 20
     },
     "prefer-stable": false,

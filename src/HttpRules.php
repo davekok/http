@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace davekok\http;
 
-use davekok\kernel\{Actionable,Cryptoble,Url};
-use davekok\lalr1\attributes\{Rule,Symbol,Symbols};
-use davekok\lalr1\{Parser,ParserException,Rules,SymbolType,Token};
+use davekok\kernel\Url;
+use davekok\parser\attributes\{Rule,Symbol,Symbols};
+use davekok\parser\{Parser,ParserException,Rules,SymbolType,Token};
 use Throwable;
 
 #[Symbols(
@@ -29,7 +29,7 @@ class HttpRules implements Rules
     private readonly Parser $parser;
 
     public function __construct(
-        private readonly Actionable $actionable,
+        private readonly bool $isCryptoEnabled = false,
     ) {}
 
     public function setParser(Parser $parser): void
@@ -42,17 +42,16 @@ class HttpRules implements Rules
     {
         ["method" => $method, "path" => $path, "query" => $query, "protocolVersion" => $protocolVersion] = $tokens[0]->value;
         $headers = $tokens[1]->value;
-        $cryptoEnabled = $this->actionable instanceof Cryptoble ? $this->actionable->isCryptoEnabled() : false;
         if (isset($headers["Host"])) {
             $hostport = explode(":", $headers["Host"]);
             [$host, $port] = match (count($hostport)) {
                 2 => $hostport,
-                1 => [...$hostport, $cryptoEnabled ? 443 : 80],
+                1 => [...$hostport, $this->isCryptoEnabled ? 443 : 80],
             };
             $port = (int)$port;
         }
         $url = new Url(
-            scheme: $cryptoEnabled ? "https" : "http",
+            scheme: $this->isCryptoEnabled ? "https" : "http",
             host:   $host ?? null,
             port:   $port ?? null,
             path:   $path,
@@ -65,9 +64,8 @@ class HttpRules implements Rules
     public function createRequestNoHeaders(array $tokens): Token
     {
         ["method" => $method, "path" => $path, "query" => $query, "protocolVersion" => $protocolVersion] = $tokens[0]->value;
-        $cryptoEnabled = $this->actionable instanceof Cryptoble ? $this->actionable->isCryptoEnabled() : false;
         $url = new Url(
-            scheme: $cryptoEnabled ? "https" : "http",
+            scheme: $this->isCryptoEnabled ? "https" : "http",
             host:   $host ?? null,
             port:   $port ?? null,
             path:   $path,

@@ -4,27 +4,25 @@ declare(strict_types=1);
 
 namespace davekok\http;
 
-use davekok\lalr1\Parser;
-use davekok\lalr1\RulesBag;
-use davekok\lalr1\RulesBagFactory;
 use davekok\kernel\Actionable;
+use davekok\kernel\Cryptoble;
 use davekok\kernel\Readable;
 use davekok\kernel\Writable;
-use ReflectionClass;
+use davekok\parser\Parser;
+use davekok\parser\RulesBag;
+use InvalidArgumentException;
 
-class HttpComponent
+class HttpFilter
 {
-    public readonly RulesBag $rulesBag;
+    public function __construct(private readonly RulesBag $rulesBag) {}
 
-    public function __construct(RulesBagFactory $rulesBagFactory = new RulesBagFactory())
-    {
-        $this->rulesBag = $rulesBagFactory->createRulesBag(new ReflectionClass(HttpRules::class));
-    }
-
-    public function read(Actionable $actionable, callable $andThen): void
+    public function read(Actionable $actionable, callable $setter): void
     {
         $actionable instanceof Readable ?: throw new InvalidArgumentException("Expected an readable actionable.");
-        $actionable->read($this->createReader($actionable), $andTen);
+        $actionable->read(
+            $this->createReader($actionable instanceof Cryptoble ? $actionable->isCryptoEnabled() : false),
+            $setter
+        );
     }
 
     public function write(Actionable $actionable, HttpMessage $message): void
@@ -33,9 +31,9 @@ class HttpComponent
         $actionable->write($this->createWriter($message));
     }
 
-    public function createReader(Actionable $actionable): HttpReader
+    public function createReader(bool $isCryptoEnabled = false): HttpReader
     {
-        return new HttpReader(new Parser($this->rulesBag, new HttpRules($actionable)));
+        return new HttpReader(new Parser($this->rulesBag, new HttpRules($isCryptoEnabled)));
     }
 
     public function createWriter(HttpMessage $message): HttpWriter

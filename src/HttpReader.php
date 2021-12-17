@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace davekok\http;
 
-use davekok\lalr1\Parser;
+use davekok\parser\Parser;
 use davekok\kernel\ReadBuffer;
 use davekok\kernel\Reader;
 use davekok\kernel\ReaderException;
