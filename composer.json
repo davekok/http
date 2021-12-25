@@ -18,7 +18,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/davekok/container"
+            "url": "https://github.com/davekok/system"
         },
         {
             "type": "vcs",
@@ -30,7 +30,7 @@
         }
     ],
     "require": {
-        "davekok/container": "dev-main",
+        "davekok/system": "dev-main",
         "davekok/kernel": "dev-main",
         "davekok/parser": "dev-main"
     },

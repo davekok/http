@@ -28,9 +28,9 @@ abstract class HttpMessage
         "~ *(application|audio|example|font|image|message|model|multipart|text|*)/([A-Za-z0-9._-]+|*)(?:;q=(1|0\.[0-9]+))?~";
 
     public function __construct(
-        public readonly float|null  $protocolVersion = null,
-        public readonly array       $headers         = [],
-        public readonly string|null $body            = null,
+        public readonly float              $protocolVersion,
+        public readonly array              $headers,
+        public readonly string|Writer|null $body,
     ) {}
 
     public function accept(array $supported): string|null
@@ -74,5 +74,10 @@ abstract class HttpMessage
     public function contentType(): string
     {
         return $this->headers[self::CONTENT_TYPE] ?? "application/octet-stream";
+    }
+
+    public function contentLength(): int
+    {
+        return $this->headers[self::CONTENT_LENGTH] ?? 0;
     }
 }

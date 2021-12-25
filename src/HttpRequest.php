@@ -11,9 +11,9 @@ class HttpRequest extends HttpMessage
     public function __construct(
         public readonly string $method,
         public readonly Url    $url,
-        float|null             $protocolVersion = null,
-        array                  $headers         = [],
-        string|null            $body            = null,
+        float                  $protocolVersion,
+        array                  $headers,
+        string|null            $body,
     ) {
         parent::__construct($protocolVersion, $headers, $body);
     }
