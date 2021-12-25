@@ -58,12 +58,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/davekok/parser.git",
-                "reference": "31357c70385c2e7e36832bc8e972101f087eaa2f"
+                "reference": "dd4b1d38a4ddd1b8dbbafa92b7d8382253e762db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/parser/zipball/31357c70385c2e7e36832bc8e972101f087eaa2f",
-                "reference": "31357c70385c2e7e36832bc8e972101f087eaa2f",
+                "url": "https://api.github.com/repos/davekok/parser/zipball/dd4b1d38a4ddd1b8dbbafa92b7d8382253e762db",
+                "reference": "dd4b1d38a4ddd1b8dbbafa92b7d8382253e762db",
                 "shasum": ""
             },
             "require-dev": {
@@ -92,7 +92,7 @@
                 "source": "https://github.com/davekok/parser/tree/main",
                 "issues": "https://github.com/davekok/parser/issues"
             },
-            "time": "2021-12-15T13:03:48+00:00"
+            "time": "2021-12-25T10:09:37+00:00"
         },
         {
             "name": "davekok/system",
