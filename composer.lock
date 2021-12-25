@@ -4,66 +4,24 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1c543e0d25ac15d0994662d7bb85107c",
+    "content-hash": "be9ba623cf61b7b179f8a3e482a67b64",
     "packages": [
-        {
-            "name": "davekok/container",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/davekok/container.git",
-                "reference": "ebbbdfa11d52c22143d37fa532b2ecad4172f396"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/davekok/container/zipball/ebbbdfa11d52c22143d37fa532b2ecad4172f396",
-                "reference": "ebbbdfa11d52c22143d37fa532b2ecad4172f396",
-                "shasum": ""
-            },
-            "require-dev": {
-                "phpunit/php-code-coverage": "^9.2.x-dev",
-                "phpunit/phpunit": "^9.5"
-            },
-            "default-branch": true,
-            "type": "project",
-            "autoload": {
-                "psr-4": {
-                    "davekok\\container\\": "src/",
-                    "davekok\\container\\tests\\": "tests/"
-                }
-            },
-            "license": [
-                "UNLICENSE"
-            ],
-            "authors": [
-                {
-                    "name": "Dave Kok",
-                    "email": "email@davekok.nl"
-                }
-            ],
-            "description": "Container abstraction",
-            "support": {
-                "source": "https://github.com/davekok/container/tree/main",
-                "issues": "https://github.com/davekok/container/issues"
-            },
-            "time": "2021-12-15T12:42:06+00:00"
-        },
         {
             "name": "davekok/kernel",
             "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/davekok/kernel.git",
-                "reference": "c96e9f49ec42ab576ce343eb7ea91e5fe643b748"
+                "reference": "cb458c47d33d75b6f56b29069b683d4904fd35d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/kernel/zipball/c96e9f49ec42ab576ce343eb7ea91e5fe643b748",
-                "reference": "c96e9f49ec42ab576ce343eb7ea91e5fe643b748",
+                "url": "https://api.github.com/repos/davekok/kernel/zipball/cb458c47d33d75b6f56b29069b683d4904fd35d4",
+                "reference": "cb458c47d33d75b6f56b29069b683d4904fd35d4",
                 "shasum": ""
             },
             "require": {
-                "davekok/container": "dev-main",
+                "davekok/system": "dev-main",
                 "psr/log": "^3.0"
             },
             "require-dev": {
@@ -92,7 +50,7 @@
                 "source": "https://github.com/davekok/kernel/tree/main",
                 "issues": "https://github.com/davekok/kernel/issues"
             },
-            "time": "2021-12-15T14:52:23+00:00"
+            "time": "2021-12-25T09:46:47+00:00"
         },
         {
             "name": "davekok/parser",
@@ -135,6 +93,51 @@
                 "issues": "https://github.com/davekok/parser/issues"
             },
             "time": "2021-12-15T13:03:48+00:00"
+        },
+        {
+            "name": "davekok/system",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/davekok/system.git",
+                "reference": "2a62fcfba64bb0ad900072b214782f3638dc93c9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/davekok/system/zipball/2a62fcfba64bb0ad900072b214782f3638dc93c9",
+                "reference": "2a62fcfba64bb0ad900072b214782f3638dc93c9",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpunit/php-code-coverage": "^9.2.x-dev",
+                "phpunit/phpunit": "^9.5"
+            },
+            "default-branch": true,
+            "bin": [
+                "bin/system"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "davekok\\system\\": "src/",
+                    "davekok\\system\\tests\\": "tests/"
+                }
+            },
+            "license": [
+                "UNLICENSE"
+            ],
+            "authors": [
+                {
+                    "name": "Dave Kok",
+                    "email": "email@davekok.nl"
+                }
+            ],
+            "description": "Configure and wire components and run the system.",
+            "support": {
+                "source": "https://github.com/davekok/system/tree/main",
+                "issues": "https://github.com/davekok/system/issues"
+            },
+            "time": "2021-12-25T09:57:13+00:00"
         },
         {
             "name": "psr/log",
@@ -273,9 +276,6 @@
             },
             "require": {
                 "php": "^7.1 || ^8.0"
-            },
-            "replace": {
-                "myclabs/deep-copy": "self.version"
             },
             "require-dev": {
                 "doctrine/collections": "^1.0",
@@ -715,12 +715,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "747f93928bcac855054f2781c209ec80d469fe14"
+                "reference": "e0c5a565a1a1f71c83f3daf228e5a25f6670299a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/747f93928bcac855054f2781c209ec80d469fe14",
-                "reference": "747f93928bcac855054f2781c209ec80d469fe14",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/e0c5a565a1a1f71c83f3daf228e5a25f6670299a",
+                "reference": "e0c5a565a1a1f71c83f3daf228e5a25f6670299a",
                 "shasum": ""
             },
             "require": {
@@ -784,7 +784,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-12-13T15:03:35+00:00"
+            "time": "2021-12-22T13:14:58+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -1029,16 +1029,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "9.5.10",
+            "version": "9.5.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "c814a05837f2edb0d1471d6e3f4ab3501ca3899a"
+                "reference": "2406855036db1102126125537adb1406f7242fdd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c814a05837f2edb0d1471d6e3f4ab3501ca3899a",
-                "reference": "c814a05837f2edb0d1471d6e3f4ab3501ca3899a",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/2406855036db1102126125537adb1406f7242fdd",
+                "reference": "2406855036db1102126125537adb1406f7242fdd",
                 "shasum": ""
             },
             "require": {
@@ -1116,11 +1116,11 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.5.10"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.5.11"
             },
             "funding": [
                 {
-                    "url": "https://phpunit.de/donate.html",
+                    "url": "https://phpunit.de/sponsors.html",
                     "type": "custom"
                 },
                 {
@@ -1128,7 +1128,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-09-25T07:38:51+00:00"
+            "time": "2021-12-25T07:07:57+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -2285,7 +2285,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "davekok/container": 20,
+        "davekok/system": 20,
         "davekok/kernel": 20,
         "davekok/parser": 20,
         "phpunit/php-code-coverage": 20
@@ -2294,5 +2294,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.2.0"
 }
