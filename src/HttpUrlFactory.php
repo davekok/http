@@ -11,7 +11,7 @@ class HttpUrlFactory implements UrlFactory
 {
     public function __construct(
         private readonly HttpFactory $httpFactory,
-        private readonly SocketUrlFactory $socketUrlFactory,
+        private readonly UrlFactory $urlFactory,
     ) {}
 
     public function createUrl(string $url): Url
@@ -25,7 +25,7 @@ class HttpUrlFactory implements UrlFactory
 
         return new HttpUrl(
             httpFactory: $this->httpFactory,
-            socketUrl:   $this->socketUrlFactory->createUrl(scheme: "tcp", host: $parts["host"], port: $parts["port"]),
+            socketUrl:   $this->urlFactory->createUrl("tcp://{$parts['host']}:{$parts['port']}"),
             scheme:      $parts["scheme"],
             username:    $parts["user"],
             password:    $parts["pass"],

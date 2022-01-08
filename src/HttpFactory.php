@@ -21,9 +21,9 @@ class HttpFactory
         return new HttpController($this->server, $request);
     }
 
-    public function createRouter(Actionable $actionable, HttpUrl $url): HttpRouter
+    public function createRouter(ActiveHttpActionable $actionable): HttpRouter
     {
-        return new HttpRouter($this->mounts, new ActiveHttpActionable($this, $actionable, $url));
+        return new HttpRouter($this->mounts, $actionable);
     }
 
     public function createReader(bool $isCryptoEnabled = false): HttpReader

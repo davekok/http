@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "be9ba623cf61b7b179f8a3e482a67b64",
+    "content-hash": "a939c1605ff6a1200b7d46035ae814bc",
     "packages": [
         {
             "name": "davekok/kernel",
@@ -12,16 +12,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/davekok/kernel.git",
-                "reference": "cb458c47d33d75b6f56b29069b683d4904fd35d4"
+                "reference": "53975eba260df725f3ae8f6311594d22e9f7299b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/kernel/zipball/cb458c47d33d75b6f56b29069b683d4904fd35d4",
-                "reference": "cb458c47d33d75b6f56b29069b683d4904fd35d4",
+                "url": "https://api.github.com/repos/davekok/kernel/zipball/53975eba260df725f3ae8f6311594d22e9f7299b",
+                "reference": "53975eba260df725f3ae8f6311594d22e9f7299b",
                 "shasum": ""
             },
             "require": {
-                "davekok/system": "dev-main",
+                "davekok/wiring": "dev-main",
                 "psr/log": "^3.0"
             },
             "require-dev": {
@@ -50,7 +50,7 @@
                 "source": "https://github.com/davekok/kernel/tree/main",
                 "issues": "https://github.com/davekok/kernel/issues"
             },
-            "time": "2021-12-25T09:46:47+00:00"
+            "time": "2022-01-08T12:42:36+00:00"
         },
         {
             "name": "davekok/parser",
@@ -95,17 +95,17 @@
             "time": "2021-12-25T10:09:37+00:00"
         },
         {
-            "name": "davekok/system",
+            "name": "davekok/wiring",
             "version": "dev-main",
             "source": {
                 "type": "git",
-                "url": "https://github.com/davekok/system.git",
-                "reference": "2a62fcfba64bb0ad900072b214782f3638dc93c9"
+                "url": "https://github.com/davekok/wiring.git",
+                "reference": "1236ba19f64d8785ffb7291eb430222d69965de4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/davekok/system/zipball/2a62fcfba64bb0ad900072b214782f3638dc93c9",
-                "reference": "2a62fcfba64bb0ad900072b214782f3638dc93c9",
+                "url": "https://api.github.com/repos/davekok/wiring/zipball/1236ba19f64d8785ffb7291eb430222d69965de4",
+                "reference": "1236ba19f64d8785ffb7291eb430222d69965de4",
                 "shasum": ""
             },
             "require-dev": {
@@ -114,13 +114,13 @@
             },
             "default-branch": true,
             "bin": [
-                "bin/system"
+                "bin/run"
             ],
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "davekok\\system\\": "src/",
-                    "davekok\\system\\tests\\": "tests/"
+                    "davekok\\wiring\\": "src/",
+                    "davekok\\wiring\\tests\\": "tests/"
                 }
             },
             "license": [
@@ -132,12 +132,12 @@
                     "email": "email@davekok.nl"
                 }
             ],
-            "description": "Configure and wire components and run the system.",
+            "description": "Configure and wire components and run a runnable.",
             "support": {
-                "source": "https://github.com/davekok/system/tree/main",
-                "issues": "https://github.com/davekok/system/issues"
+                "source": "https://github.com/davekok/wiring/tree/main",
+                "issues": "https://github.com/davekok/wiring/issues"
             },
-            "time": "2021-12-25T09:57:13+00:00"
+            "time": "2022-01-08T12:37:00+00:00"
         },
         {
             "name": "psr/log",
@@ -594,16 +594,16 @@
         },
         {
             "name": "phpdocumentor/type-resolver",
-            "version": "1.5.1",
+            "version": "1.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpDocumentor/TypeResolver.git",
-                "reference": "a12f7e301eb7258bb68acd89d4aefa05c2906cae"
+                "reference": "93ebd0014cab80c4ea9f5e297ea48672f1b87706"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpDocumentor/TypeResolver/zipball/a12f7e301eb7258bb68acd89d4aefa05c2906cae",
-                "reference": "a12f7e301eb7258bb68acd89d4aefa05c2906cae",
+                "url": "https://api.github.com/repos/phpDocumentor/TypeResolver/zipball/93ebd0014cab80c4ea9f5e297ea48672f1b87706",
+                "reference": "93ebd0014cab80c4ea9f5e297ea48672f1b87706",
                 "shasum": ""
             },
             "require": {
@@ -638,9 +638,9 @@
             "description": "A PSR-5 based resolver of Class names, Types and Structural Element Names",
             "support": {
                 "issues": "https://github.com/phpDocumentor/TypeResolver/issues",
-                "source": "https://github.com/phpDocumentor/TypeResolver/tree/1.5.1"
+                "source": "https://github.com/phpDocumentor/TypeResolver/tree/1.6.0"
             },
-            "time": "2021-10-02T14:08:47+00:00"
+            "time": "2022-01-04T19:58:01+00:00"
         },
         {
             "name": "phpspec/prophecy",
@@ -715,12 +715,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "e0c5a565a1a1f71c83f3daf228e5a25f6670299a"
+                "reference": "39df413d71278d4954ee4dfbcd0a13e8b63e1636"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/e0c5a565a1a1f71c83f3daf228e5a25f6670299a",
-                "reference": "e0c5a565a1a1f71c83f3daf228e5a25f6670299a",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/39df413d71278d4954ee4dfbcd0a13e8b63e1636",
+                "reference": "39df413d71278d4954ee4dfbcd0a13e8b63e1636",
                 "shasum": ""
             },
             "require": {
@@ -784,7 +784,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-12-22T13:14:58+00:00"
+            "time": "2022-01-01T08:00:15+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -2096,20 +2096,23 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.23.0",
+            "version": "v1.24.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
-                "reference": "46cd95797e9df938fdd2b03693b5fca5e64b01ce"
+                "reference": "30885182c981ab175d4d034db0f6f469898070ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/46cd95797e9df938fdd2b03693b5fca5e64b01ce",
-                "reference": "46cd95797e9df938fdd2b03693b5fca5e64b01ce",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/30885182c981ab175d4d034db0f6f469898070ab",
+                "reference": "30885182c981ab175d4d034db0f6f469898070ab",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.1"
+            },
+            "provide": {
+                "ext-ctype": "*"
             },
             "suggest": {
                 "ext-ctype": "For best performance"
@@ -2155,7 +2158,7 @@
                 "portable"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.23.0"
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.24.0"
             },
             "funding": [
                 {
@@ -2171,7 +2174,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-02-19T12:13:01+00:00"
+            "time": "2021-10-20T20:35:02+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -2285,7 +2288,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "davekok/system": 20,
+        "davekok/wiring": 20,
         "davekok/kernel": 20,
         "davekok/parser": 20,
         "phpunit/php-code-coverage": 20

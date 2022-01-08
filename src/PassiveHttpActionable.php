@@ -40,6 +40,6 @@ class PassiveHttpActionable implements Actionable, Acceptor
 
     public function accept(Actionable $actionable): void
     {
-        $this->httpFactory->createRouter($actionable, $this->url);
+        $this->httpFactory->createRouter(new ActiveHttpActionable($this->httpFactory, $actionable, $this->url));
     }
 }
