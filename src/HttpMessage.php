@@ -4,80 +4,63 @@ declare(strict_types=1);
 
 namespace davekok\http;
 
+use Generator;
+use stdClass;
+
 abstract class HttpMessage
 {
-    public const OPTIONS        = "OPTIONS";
-    public const HEAD           = "HEAD";
-    public const GET            = "GET";
-    public const PUT            = "PUT";
-    public const POST           = "POST";
-    public const PATCH          = "PATCH";
-    public const DELETE         = "DELETE";
+    public readonly string $protocol;
+    public readonly object $headers;
+    public readonly Generator|null $body;
 
-    public const ACCEPT         = "Accept";
-    public const ALLOW          = "Allow";
-    public const CONTENT_LENGTH = "Content-Length";
-    public const CONTENT_TYPE   = "Content-Type";
-    public const DATE           = "Date";
-    public const ETAG           = "ETag";
-    public const HOST           = "Host";
-    public const LAST_MODIFIED  = "Last-Modified";
-    public const SERVER         = "Server";
-
-    private const ACCEPT_REGEX =
-        "~ *(application|audio|example|font|image|message|model|multipart|text|*)/([A-Za-z0-9._-]+|*)(?:;q=(1|0\.[0-9]+))?~";
-
-    public function __construct(
-        public readonly float              $protocolVersion,
-        public readonly array              $headers,
-        public readonly string|Writer|null $body,
-    ) {}
-
-    public function accept(array $supported): string|null
+    public function setProtocol(string $protocol): static
     {
-        if (isset($this->headers[self::ACCEPT]) === false) {
-            return null;
-        }
-        $firstMimeType    = null;
-        $firstSubMimeType = [];
-        foreach ($supported as $mimeType) {
-            [$mimeType, $subMimeType] = explode("/", $mimeType);
-            if (isset($firstMimeType) === false) {
-                $firstMimeType = $mimeType;
-            }
-            if (isset($firstSubMimeType[$mimeType]) === false) {
-                $firstSubMimeType[$mimeType] = $subMimeType;
-            }
-        }
-        $currentQuality = 0;
-        $use            = null;
-        foreach (explode(",", $accept) as $mimeType) {
-            if (preg_match(self::ACCEPT_REGEX, $mimeType, $matches) === 1) {
-                $mimeType    = $matches[1];
-                $subMimeType = $matches[2];
-                $quality     = (float)($matches[3] ?? 1);
-                if ($mimeType === "*") {
-                    $mimeType = $firstMimeType;
-                }
-                if ($subMimeType === "*") {
-                    $mimeType = $firstSubMimeType[$subMimeType];
-                }
-                if ($currentQuality < $quality && in_array($mimeType, $supported) === true) {
-                    $currentQuality = $quality;
-                    $use            = $mimeType;
-                }
-            }
-        }
-        return $mimeType;
+        $this->protocol = $protocol;
+        return $this;
     }
 
-    public function contentType(): string
+    public function setHeaders(object $headers): static
     {
-        return $this->headers[self::CONTENT_TYPE] ?? "application/octet-stream";
+        $this->headers = $headers;
+        return $this;
     }
 
-    public function contentLength(): int
+    public function setHeader(string $key, string $value): static
     {
-        return $this->headers[self::CONTENT_LENGTH] ?? 0;
+        $headers = $this->headers ??= new stdClass;
+        $headers->{self::snakeCaseToCamelCase($key)} = self::castHeaderValue($value);
+        return $this;
+    }
+
+    public function setBody(Generator|null $body): static
+    {
+        $this->body = $body;
+        return $this;
+    }
+
+    public function getHeaders(): stdClass
+    {
+        return $this->headers ??= new stdClass;
+    }
+
+    public static function snakeCaseToCamelCase(string $header): string
+    {
+        if (!str_contains($header, "-")) {
+            return lcfirst($header);
+        }
+        return str_replace("-", "", lcfirst(ucwords(strtolower($header), "-")));
+    }
+
+    public static function camelCaseToSnakeCase($string): string
+    {
+        return ucfirst(preg_replace('/(?<=\d)(?=[A-Za-z])|(?<=[A-Za-z])(?=\d)|(?<=[a-z])(?=[A-Z])/', "-", $string));
+    }
+
+    public static function castHeaderValue(string $headerValue): string|int
+    {
+        if (ctype_digit($headerValue) && $headerValue[0] !== '0') {
+            return (int)$headerValue;
+        }
+        return $headerValue;
     }
 }

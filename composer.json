@@ -15,23 +15,7 @@
             "davekok\\http\\tests\\": "tests/"
         }
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/davekok/wiring"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/davekok/kernel"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/davekok/parser"
-        }
-    ],
     "require": {
-        "davekok/wiring": "dev-main",
-        "davekok/kernel": "dev-main",
         "davekok/parser": "dev-main"
     },
     "require-dev": {

@@ -3,109 +3,64 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-CONTAINER_REGISTRY="ghcr.io"
-SELF="$(readlink -f "$0")"
+if which podman >/dev/null; then
+    CONMAN="$(which podman)"
+    if which buildah >/dev/null; then
+        BUILDCON=("$(which buildah)" bud)
+    fi
+elif which docker >/dev/null; then
+    CONMAN="$(which docker)"
+    BUILDCON=("$CONMAN" build)
+fi
+
+CONREG="dkcr.nl"
+SELF="$(realpath "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}")"
 DIR="$(dirname "$SELF")"
-ACCOUNT="$(basename "$(dirname "$DIR")")"
+VENDOR="$(basename "$(dirname "$DIR")")"
 PROJECT="$(basename "$DIR")"
-ID="$CONTAINER_REGISTRY/$ACCOUNT/$PROJECT"
+IMAGE="$CONREG/$VENDOR/$PROJECT"
+VOLUMES=(-w "/opt/$VENDOR/$PROJECT" "-v" "$DIR:/opt/$VENDOR/$PROJECT:rw")
 
-cd "$DIR"
-
-function volumes() {
-    VOLUMES=()
-    for volume in "$@"
-    do
-        case "$volume" in
-            src)
-                VOLUMES+=("-v" "./src:/app/src:ro")
-                ;;
-            test)
-                mkdir -p "./tests"
-                VOLUMES+=("-v" "./tests:/app/tests:ro")
-                ;;
-            phpunit)
-                VOLUMES+=("-v" "./phpunit.xml:/app/phpunit.xml:ro")
-                ;;
-            coverage)
-                mkdir -p "./docs/coverage"
-                VOLUMES+=("-v" "./docs/coverage:/app/docs/coverage:rw")
-                ;;
-            dependencies)
-                if [ -d "../wiring/src" ]; then
-                    VOLUMES+=("-v" "../wiring/src:/app/vendor/davekok/wiring/src:ro")
-                fi
-                if [ -d "../kernel/src" ]; then
-                    VOLUMES+=("-v" "../kernel/src:/app/vendor/davekok/kernel/src:ro")
-                fi
-                if [ -d "../parser/src" ]; then
-                    VOLUMES+=("-v" "../parser/src:/app/vendor/davekok/parser/src:ro")
-                fi
-                ;;
-        esac
-    done
-}
+if ! "$CONMAN" images | grep -q "$IMAGE"; then
+    "${BUILDCON[@]}" -t $IMAGE -f Containerfile .
+fi
 
 case "${1:-}" in
-    login)
-        podman login "$CONTAINER_REGISTRY"
-        ;;
-
     build)
-        if [ ! -f "composer.lock" ]
-        then
-            exec "$SELF" update
-        fi
-
-        case "${2:-dev}" in
-            dev)
-                buildah bud -t "$ID:dev" "dev.containerfile"
-                ;;
-            *)
-                buildah bud -t "$ID:${2}" "release.containerfile"
-                ;;
-        esac
+        "${BUILDCON[@]}" -t $IMAGE -f Containerfile .
         ;;
 
-    update | require)
-        CMD="$1"
-        shift
-        podman run -it --rm -v ./:/app/ composer composer "$CMD" --no-install $*
-        exec "$SELF" build
-        ;;
-
-    publish)
-        podman push "$ID:${2:-latest}"
+    update | require | install)
+        "$CONMAN" run -it --rm -v "$DIR:/app:rw" composer composer "$@"
         ;;
 
     test)
-        volumes src test phpunit coverage dependencies
         shift
-        podman run -it --rm "${VOLUMES[@]}" "$ID:dev" \
-            php /app/vendor/bin/phpunit --coverage-html /app/docs/coverage /app/tests $*
+        "$CONMAN" run -it --rm "${VOLUMES[@]}" "$IMAGE" \
+            php /opt/$VENDOR/$PROJECT/vendor/bin/phpunit --coverage-html "/opt/$VENDOR/$PROJECT/docs/coverage" /opt/$VENDOR/$PROJECT/tests $*
         ;;
 
     check)
-        volumes src test
-        podman run -it --rm "${VOLUMES[@]}" "$ID:dev" \
+        "$CONMAN" run -it --rm "${VOLUMES[@]}" "$IMAGE" \
             find src tests -name "*.php" -type f -exec php -l "{}" \;
         ;;
 
     bash)
-        volumes src test
-        podman run -it --rm "${VOLUMES[@]}" "$ID:${2:-dev}" bash
+        "$CONMAN" run -it --rm "${VOLUMES[@]}" "$IMAGE" bash
         ;;
 
-    run)
-        echo "This is a library and can't be run."
+    php)
+        shift
+        "$CONMAN" run -it --rm "${VOLUMES[@]}" "$IMAGE" php "$@"
         ;;
 
-    status | add | commit | pull | push | stash | diff)
-        git $*
+    coverage)
+        "$CONMAN" run --name "${VENDOR}_${PROJECT}" -d --rm "${VOLUMES[@]}" -p 8080:8080 "$IMAGE" php -S 0.0.0.0:8080 coverage.php >/dev/null
+        echo "Goto http://$(ip addr show eth0 | sed -n 's/^ *inet \([^/]*\).*$/\1/p'):8080"
         ;;
 
-    "")
-        echo "Usage: $0 ( login | build | update | require | publish | test | run | check | bash | status | add | commit | pull | push | stash | diff)"
+    ""|help|--help|-h|-?)
+        echo "Usage: $0 ( login | build | update | require | test | check | bash | coverage)"
         ;;
 
     *)

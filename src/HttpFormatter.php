@@ -4,74 +4,42 @@ declare(strict_types=1);
 
 namespace davekok\http;
 
-use DateTime;
-use Exception;
+use Generator;
 
 class HttpFormatter
 {
-    public function formatRequestLine(string $method, string|null $path, string|null $query, float $protocolVersion): string
+    public function format(iterable $messages): Generator
     {
-        return $method
-            . " "
-            . ($path ?? "/")
-            . ($query !== null ? ("?" . $query) : "")
-            . " "
-            . $this->formatProtocolVersion($protocolVersion)
-            . "\r\n";
-    }
+        foreach ($messages as $message) {
+            yield match (true) {
+                $message instanceof HttpRequest => $message->method
+                    . " "
+                    . $message->path
+                    . "?"
+                    . http_build_query($message->query, encoding_type: PHP_QUERY_RFC3986)
+                    . " "
+                    . $message->protocol
+                    . "\r\n",
 
-    public function formatResponseLine(float $protocolVersion, HttpStatus $status): string
-    {
-        return $this->formatProtocolVersion($protocolVersion)
-            . " "
-            . $status->code()
-            . " "
-            . $status->text()
-            . "\r\n";
-    }
+                $message instanceof HttpResponse => $message->protocol
+                    . " "
+                    . $message->status->code()
+                    . " "
+                    . $message->status->text()
+                    . "\r\n",
 
-    public function formatHeader(string $name, string $value): string
-    {
-        return "$name:$value\r\n";
-    }
-
-    public function formatEndOfHeaders(): string
-    {
-        return "\r\n";
-    }
-
-    private function formatProtocolVersion(float $protocolVersion): string
-    {
-        if ($protocolVersion !== 1.0 && $protocolVersion !== 1.1) {
-            throw new Exception("Invalid HTTP protocol version: {$protocolVersion}");
+                default => throw new HttpFormatterException("Invalid http message"),
+            };
+            if (isset($message->headers)) {
+                foreach ($message->headers as $key => $value) {
+                    $key = HttpMessage::camelCaseToSnakeCase($key);
+                    yield "$key:$value\r\n";
+                }
+            }
+            yield "\r\n";
+            if (isset($message->body)) {
+                yield from $message->body;
+            }
         }
-        return "HTTP/{$protocolVersion}";
-    }
-
-    /**
-     * Should only be used for debugging and testing.
-     */
-    public function format(HttpMessage $message): string
-    {
-        if ($message instanceof HttpRequest) {
-            return $this->formatRequestLine($message->method, $message->path, $message->query, $message->protocolVersion)
-                . $this->formatHeaders()
-                . $message->body;
-        } else {
-            return
-                $this->formatResponseLine($message->protocolVersion, $message->status)
-                . $this->formatHeaders()
-                . $message->body;
-        }
-    }
-
-    private function formatHeaders(array $headers): string
-    {
-        $ret = "";
-        foreach ($headers as $name => $value) {
-            $ret .= $this->formatHeader($name, $value);
-        }
-        $ret .= $this->formatEndOfHeaders();
-        return $ret;
     }
 }

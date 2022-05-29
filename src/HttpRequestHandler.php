@@ -6,5 +6,5 @@ namespace davekok\http;
 
 interface HttpRequestHandler
 {
-    public function handleHttpRequest(HttpRequest $request, HttpResponseFactory $responseFactory): HttpResponse;
+    public function handleRequest(HttpRequest $request): HttpResponse;
 }

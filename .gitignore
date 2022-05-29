@@ -1,1 +1,8 @@
-docs/coverage/
+/.idea/
+/.phpunit.cache/
+/docs/coverage/
+/vendor/
+/src/HttpParserRule.php
+/src/HttpParserStitcher.php
+/src/HttpParserToken.php
+/src/HttpParserType.php
