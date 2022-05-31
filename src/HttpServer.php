@@ -27,6 +27,9 @@ class HttpServer
     {
         /** @var HttpRequest|HttpResponse $request */
         foreach ((new HttpParser)->parse($input) as $request) {
+            if ($request === null) {
+                return;
+            }
             if ($request instanceof HttpResponse) {
                 error_log("Received http response while http request was expected.");
                 continue;

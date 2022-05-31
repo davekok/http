@@ -54,6 +54,11 @@ case "${1:-}" in
         "$CONMAN" run -it --rm "${VOLUMES[@]}" "$IMAGE" php "$@"
         ;;
 
+    proof)
+        shift
+        "$CONMAN" run -it --rm "${VOLUMES[@]}" -p 8080:8080 "$IMAGE" php "$@"
+        ;;
+
     coverage)
         "$CONMAN" run --name "${VENDOR}_${PROJECT}" -d --rm "${VOLUMES[@]}" -p 8080:8080 "$IMAGE" php -S 0.0.0.0:8080 coverage.php >/dev/null
         echo "Goto http://$(ip addr show eth0 | sed -n 's/^ *inet \([^/]*\).*$/\1/p'):8080"

@@ -13,8 +13,8 @@ class HttpClient
     public function send(HttpRequest $request): HttpResponse
     {
         $stream = $this->connector->connect($request->getSocketAddress());
-        $stream->write((new HttpWriter)->write([$request]));
-        foreach ((new HttpReader)->read($stream->read()) as $response) {
+        $stream->write((new HttpFormatter)->format([$request]));
+        foreach ((new HttpParser)->parse($stream->read()) as $response) {
             return $response;
         }
         throw new \RuntimeException("No response received");
